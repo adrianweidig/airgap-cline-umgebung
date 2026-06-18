@@ -73,6 +73,7 @@ if ($python) {
         if (-not (Test-Path -LiteralPath (Join-Path $workspace "memory/EVENTS.jsonl"))) { throw "Memory EVENTS.jsonl was not created." }
     } finally { if (Test-Path -LiteralPath $tempRoot) { Remove-Item -LiteralPath $tempRoot -Recurse -Force } }
 }
+& (Join-Path $ScriptDir "Test-ClineMarkdownBehavior.ps1") -RootPath $RepoRoot
 $nonAscii = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File -Force | Where-Object { $_.FullName -notmatch "\\.git\\|\\dist\\|\\__pycache__\\" -and $_.Extension -ne ".pyc" } | Select-String -Pattern "[^\x00-\x7F]" -ErrorAction SilentlyContinue
 if ($nonAscii) { throw "Non-ASCII content remains: $($nonAscii[0].Path)" }
 Write-Host "All exportable environments are valid."

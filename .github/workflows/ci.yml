@@ -28,7 +28,7 @@ jobs:
         run: |
           $python = Get-Command python -ErrorAction SilentlyContinue
           if (-not $python) { $python = Get-Command python3 -ErrorAction SilentlyContinue }
-          if (-not $python) { throw "Python wurde nicht gefunden." }
+          if (-not $python) { throw "Python was not found." }
           Get-ChildItem -Path environments -Recurse -Filter *.py | ForEach-Object {
             & $python.Source -c "import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" $_.FullName
           }
@@ -38,4 +38,4 @@ jobs:
           find environments -name '*.sh' -print0 | xargs -0 -n 1 sh -n
       - name: Build packages
         shell: pwsh
-        run: ./scripts/Build-AllEnvironmentPackages.ps1 -Version "0.4.0-ci" -SkipTests
+        run: ./scripts/Build-AllEnvironmentPackages.ps1 -Version "0.5.0-ci" -SkipTests

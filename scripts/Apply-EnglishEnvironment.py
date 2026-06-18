@@ -618,8 +618,11 @@ def write_root_docs(root: Path, version: str) -> None:
 
         ```powershell
         .\\scripts\\Test-AllEnvironmentPackages.ps1
+        .\\scripts\\Test-ClineMarkdownBehavior.ps1
         .\\scripts\\Build-AllEnvironmentPackages.ps1 -Version {version}
         ```
+
+        `Test-AllEnvironmentPackages.ps1` includes the Cline Markdown behavior simulation. The simulation is a scenario-based deterministic test for the agent instructions: first-read order, central path handling, provider boundaries, external workspace behavior, coordinated memory, owner protection, central helper use, and air-gap assumptions.
 
         ## Useful Documents
 
@@ -701,7 +704,7 @@ def write_root_docs(root: Path, version: str) -> None:
         - Do not add installers, binaries, VSIX files, model files, or generated archives.
         - Every exportable environment must remain self-contained and understandable on its own.
         - Changes to shared rules, workflows, skills, helpers, or memory templates must be synchronized across all eight environments.
-        - Run `scripts/Test-AllEnvironmentPackages.ps1` before submitting changes.
+        - Run `scripts/Test-AllEnvironmentPackages.ps1` before submitting changes. This includes the deterministic Cline Markdown behavior simulation.
     """)
     write(root / "CODE_OF_CONDUCT.md", """
         # Code Of Conduct
@@ -2016,6 +2019,7 @@ def write_root_scripts(root: Path, version: str) -> None:
                 if (-not (Test-Path -LiteralPath (Join-Path $workspace "memory/EVENTS.jsonl"))) { throw "Memory EVENTS.jsonl was not created." }
             } finally { if (Test-Path -LiteralPath $tempRoot) { Remove-Item -LiteralPath $tempRoot -Recurse -Force } }
         }
+        & (Join-Path $ScriptDir "Test-ClineMarkdownBehavior.ps1") -RootPath $RepoRoot
         $nonAscii = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File -Force | Where-Object { $_.FullName -notmatch "\\\\.git\\\\|\\\\dist\\\\|\\\\__pycache__\\\\" -and $_.Extension -ne ".pyc" } | Select-String -Pattern "[^\\x00-\\x7F]" -ErrorAction SilentlyContinue
         if ($nonAscii) { throw "Non-ASCII content remains: $($nonAscii[0].Path)" }
         Write-Host "All exportable environments are valid."

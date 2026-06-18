@@ -100,8 +100,11 @@ This repository intentionally excludes Cline installers, VS Code extensions, pro
 
 ```powershell
 .\scripts\Test-AllEnvironmentPackages.ps1
+.\scripts\Test-ClineMarkdownBehavior.ps1
 .\scripts\Build-AllEnvironmentPackages.ps1 -Version 0.5.0
 ```
+
+`Test-AllEnvironmentPackages.ps1` includes the Cline Markdown behavior simulation. The simulation is a scenario-based deterministic test for the agent instructions: first-read order, central path handling, provider boundaries, external workspace behavior, coordinated memory, owner protection, central helper use, and air-gap assumptions.
 
 ## Useful Documents
 
