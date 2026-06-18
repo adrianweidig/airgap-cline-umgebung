@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Windows_User",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:33.2313588+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:35.7541706+02:00",
     "os":  "Windows",
     "role":  "User",
     "family":  "windows",
@@ -9,5 +10,14 @@
     "recommendedPath":  "C:\\Cline_AirGap\\Cline_Env_Windows_User oder Netzwerkshare",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }

@@ -1442,4 +1442,9 @@ foreach ($Env in $Environments) {
     Write-TextFile "environments/$($Env.Name)/SHA256SUMS.txt" (($lines -join "`n") + "`n")
 }
 
+$v2Enhancer = Join-Path $ScriptDir "Apply-V2Enhancements.ps1"
+if (Test-Path -LiteralPath $v2Enhancer) {
+    & $v2Enhancer -RootPath $RepoRoot -Version $Version
+}
+
 Write-Host "Umgebungen synchronisiert: $RepoRoot"

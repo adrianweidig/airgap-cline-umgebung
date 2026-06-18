@@ -1,32 +1,42 @@
 # Start Hier: Cline_Env_Linux_User
 
-Diese Umgebung ist eine exportierbare Air-Gap-Cline-Ausgangsumgebung.
+Diese Umgebung ist eine direkt exportierbare Air-Gap-Cline-Ausgangsumgebung. Cline selbst muss bereits installiert, eingerichtet und mit dem vorgesehenen KI-Server verbunden sein.
 
-## Voraussetzung
+## Erstauftrag an Cline
 
-Cline ist bereits installiert, eingerichtet und mit dem gewuenschten KI-Server verbunden. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.
+Gib Cline den vollstaendigen Pfad zu diesem Ordner:
 
-## Initialisierung durch Cline
+```text
+Initialisiere dich ueber folgenden Pfad: <vollstaendiger Pfad zu diesem Cline_Env_... Ordner>
+```
 
-Gib Cline diesen Auftrag:
+Cline muss danach in dieser Reihenfolge lesen:
 
-`	ext
-Initialisiere dich ueber folgenden Pfad: <vollstaendiger Pfad zu diesem Ordner>
-`
+1. `START_HIER.md`
+2. `AGENTS.md`
+3. `ENVIRONMENT.md`
+4. alle Dateien unter `shared/rules/`
+5. den passenden Workflow unter `shared/workflows/`
 
-Cline muss dann in dieser Reihenfolge lesen:
+## Setup-Skript
 
-1. START_HIER.md
-2. AGENTS.md
-3. ENVIRONMENT.md
-4. shared/rules/00-airgap-grundsaetze.md
+Vorgesehen fuer diese Variante:
 
-## Lokales Setup
+```text
+sh ./scripts/initialize-airgap-cline-environment.sh
+```
 
-Falls Cline ein Skript ausfuehren soll, ist fuer diese Variante vorgesehen:
+Fuer eine Vorschau ohne Schreibzugriff:
 
-`	ext
-./scripts/initialize-airgap-cline-environment.sh
-`
+```text
+sh ./scripts/initialize-airgap-cline-environment.sh --dry-run
+```
 
-Das Skript erzeugt den eigenen Nutzer-/Agentenordner, synchronisiert globale Cline-Stubs und schreibt state/bootstrap-status.json. Es darf keine Provider- oder KI-Server-Konfiguration aendern.
+Das Skript validiert den Zentralpfad, erzeugt einen eigenen Nutzer-/Agentenordner, synchronisiert globale Cline-Stubs und schreibt `state/bootstrap-status.json`. Es veraendert keine Provider-, Modell-, Auth- oder KI-Server-Konfiguration.
+
+## Wichtige Cline-Pfade
+
+- Globale Regeln: `~/.cline/rules` und kompatibel `Documents/Cline/Rules`.
+- Globale Workflows: `~/.cline/data/workflows`.
+- Globale Skills: `~/.cline/skills`.
+- Projektbezogene Cline-Dateien werden in externen Zielrepos nicht angelegt, ausser der Nutzer fordert das ausdruecklich.

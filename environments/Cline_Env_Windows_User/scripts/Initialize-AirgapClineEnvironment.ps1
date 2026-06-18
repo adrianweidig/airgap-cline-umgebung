@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [string]$RootPath = "",
-    [switch]$NoGlobalStub
+    [switch]$NoGlobalStub,
+    [switch]$DryRun,
+    [switch]$Repair
 )
 
 Set-StrictMode -Version Latest
@@ -12,26 +14,80 @@ if ([string]::IsNullOrWhiteSpace($RootPath)) {
     $RootPath = (Resolve-Path (Join-Path $ScriptDir "..")).Path
 }
 $root = [System.IO.Path]::GetFullPath($RootPath)
-foreach ($required in @("START_HIER.md", "AGENTS.md", "ENVIRONMENT.md", "MANIFEST.json")) {
-    if (-not (Test-Path -LiteralPath (Join-Path $root $required))) {
-        throw "Fehlende Pflichtdatei: $required"
+$errors = @()
+$versionPath = Join-Path $root "VERSION"
+$version = if (Test-Path -LiteralPath $versionPath) { (Get-Content -LiteralPath $versionPath -Raw).Trim() } else { "unknown" }
+
+function Write-BootstrapStatus {
+    param([string]$Status, [string]$AgentRoot, $StubTargets, [string[]]$Errors)
+    $identityDomain = if ($env:USERDOMAIN) { $env:USERDOMAIN } else { $env:COMPUTERNAME }
+    $identityUser = if ($env:USERNAME) { $env:USERNAME } else { [Environment]::UserName }
+    $statusObject = [ordered]@{
+        schemaVersion = 2
+        status = $Status
+        environment = "Cline_Env_Windows_User"
+        version = $version
+        os = "Windows"
+        role = "User"
+        rootPath = $root
+        domain = $identityDomain
+        username = $identityUser
+        host = if ($env:COMPUTERNAME) { $env:COMPUTERNAME } else { [Environment]::MachineName }
+        agentRoot = $AgentRoot
+        dryRun = [bool]$DryRun
+        repair = [bool]$Repair
+        noGlobalStub = [bool]$NoGlobalStub
+        providerChanged = $false
+        checkedAt = (Get-Date).ToString("o")
+        stubTargets = $StubTargets
+        errors = $Errors
     }
+    if (-not $DryRun) {
+        $stateDir = Join-Path $root "state"
+        New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
+        $statusObject | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $stateDir "bootstrap-status.json") -Encoding UTF8
+    }
+    $statusObject | ConvertTo-Json -Depth 20
 }
 
-$agentRoot = & (Join-Path $ScriptDir "New-AirgapClineUserWorkspace.ps1") -RootPath $root
-if (-not $NoGlobalStub) {
-    & (Join-Path $ScriptDir "Sync-ClineGlobalStubs.ps1") -RootPath $root
-}
+try {
+    foreach ($required in @("START_HIER.md", "AGENTS.md", "ENVIRONMENT.md", "MANIFEST.json", "shared/rules", "shared/workflows", "shared/skills", "shared/helpers/python")) {
+        if (-not (Test-Path -LiteralPath (Join-Path $root $required))) {
+            throw "Fehlender Bestandteil: $required"
+        }
+    }
 
-$status = [ordered]@{
-    environment = "Cline_Env_Windows_User"
-    rootPath = $root
-    agentRoot = ($agentRoot | Select-Object -Last 1)
-    providerChanged = $false
-    initializedAt = (Get-Date).ToString("o")
-}
-$stateDir = Join-Path $root "state"
-New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
-$status | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $stateDir "bootstrap-status.json") -Encoding UTF8
+    $agentOutput = & (Join-Path $ScriptDir "New-AirgapClineUserWorkspace.ps1") -RootPath $root -DryRun:$DryRun
+    $agentRoot = ($agentOutput | Select-Object -Last 1)
+    if ($DryRun) {
+        $agentJson = ($agentOutput | Out-String).Trim()
+        if ($agentJson) {
+            try {
+                $agentPlan = $agentJson | ConvertFrom-Json
+                if ($agentPlan.agentRoot) { $agentRoot = $agentPlan.agentRoot }
+            } catch {
+                $agentRoot = $agentJson
+            }
+        }
+    }
+    $stubTargets = @()
+    if (-not $NoGlobalStub) {
+        $syncOutput = & (Join-Path $ScriptDir "Sync-ClineGlobalStubs.ps1") -RootPath $root -DryRun:$DryRun -Repair:$Repair
+        $syncJson = ($syncOutput | Out-String).Trim()
+        if ($syncJson) {
+            try {
+                $sync = $syncJson | ConvertFrom-Json
+                $stubTargets = $sync.targets
+            } catch {
+                $stubTargets = @($syncJson)
+            }
+        }
+    }
 
-Write-Host "Initialisierung abgeschlossen fuer Cline_Env_Windows_User."
+    Write-BootstrapStatus -Status "ok" -AgentRoot $agentRoot -StubTargets $stubTargets -Errors @()
+    Write-Host "Initialisierung abgeschlossen fuer Cline_Env_Windows_User."
+} catch {
+    $errors += $_.Exception.Message
+    Write-BootstrapStatus -Status "error" -AgentRoot "" -StubTargets @() -Errors $errors
+    throw
+}

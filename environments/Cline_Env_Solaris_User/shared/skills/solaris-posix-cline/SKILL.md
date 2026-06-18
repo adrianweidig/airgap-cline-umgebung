@@ -1,3 +1,4 @@
+<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
 name: solaris-posix-cline
 description: Plattformskill fuer Cline_Env_Solaris_User mit Fokus auf Solaris POSIX best-effort im Benutzerkontext.
@@ -5,13 +6,12 @@ description: Plattformskill fuer Cline_Env_Solaris_User mit Fokus auf Solaris PO
 
 # solaris-posix-cline
 
-Diese Umgebung ist $(System.Collections.Hashtable.Name).
-
 ## Plattformregeln
 
+- Umgebung: Cline_Env_Solaris_User
 - OS: Solaris
 - Berechtigungsmodell: User
 - Primaerer Modus: Solaris POSIX best-effort im Benutzerkontext
-- Empfohlener Ablageort: $(System.Collections.Hashtable.RecommendedPath)
+- Empfohlener Ablageort: `~/cline-airgap/Cline_Env_Solaris_User`
 
-Nutze die Skripte unter scripts/ dieser Umgebung und beachte, dass Cline bereits eingerichtet ist.
+Nutze die Skripte unter scripts/ dieser Umgebung. Cline muss bereits eingerichtet sein. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.

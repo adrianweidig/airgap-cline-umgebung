@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Linux_Admin",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:33.9234273+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:37.3123762+02:00",
     "os":  "Linux",
     "role":  "Admin",
     "family":  "linux",
@@ -9,5 +10,14 @@
     "recommendedPath":  "/opt/cline-airgap/Cline_Env_Linux_Admin",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }

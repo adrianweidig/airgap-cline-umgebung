@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Windows_Admin",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:33.5123575+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:36.2558858+02:00",
     "os":  "Windows",
     "role":  "Admin",
     "family":  "windows",
@@ -9,5 +10,14 @@
     "recommendedPath":  "C:\\Cline_AirGap\\Cline_Env_Windows_Admin oder zentraler Netzwerkshare",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }

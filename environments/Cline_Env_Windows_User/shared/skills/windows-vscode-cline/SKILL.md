@@ -1,3 +1,4 @@
+<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
 name: windows-vscode-cline
 description: Plattformskill fuer Cline_Env_Windows_User mit Fokus auf Windows mit VS Code Cline Extension.
@@ -5,13 +6,12 @@ description: Plattformskill fuer Cline_Env_Windows_User mit Fokus auf Windows mi
 
 # windows-vscode-cline
 
-Diese Umgebung ist $(System.Collections.Hashtable.Name).
-
 ## Plattformregeln
 
+- Umgebung: Cline_Env_Windows_User
 - OS: Windows
 - Berechtigungsmodell: User
 - Primaerer Modus: Windows mit VS Code Cline Extension
-- Empfohlener Ablageort: $(System.Collections.Hashtable.RecommendedPath)
+- Empfohlener Ablageort: `C:\Cline_AirGap\Cline_Env_Windows_User oder Netzwerkshare`
 
-Nutze die Skripte unter scripts/ dieser Umgebung und beachte, dass Cline bereits eingerichtet ist.
+Nutze die Skripte unter scripts/ dieser Umgebung. Cline muss bereits eingerichtet sein. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.

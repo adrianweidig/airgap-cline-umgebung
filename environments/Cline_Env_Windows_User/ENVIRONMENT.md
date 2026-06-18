@@ -6,16 +6,20 @@
 | Berechtigungsmodell | User |
 | Primaerer Modus | Windows mit VS Code Cline Extension |
 | Empfohlener Ablageort | $(System.Collections.Hashtable.RecommendedPath) |
+| Version | 0.2.0 |
 
-User-Variante ohne Adminrechte fuer Home, Desktop oder Netzwerkshare. Primaer fuer VS Code mit installierter Cline Extension.
+User-Variante ohne Adminrechte. Sie schreibt nur in den gewaehlten Zentralpfad und in benutzereigene Cline-Pfade.
 
 ## Grenzen
 
-- Cline muss bereits funktionsfaehig vorhanden sein.
-- Keine Provider-, Modell- oder Authentifizierungsdaten werden geaendert.
-- Die Umgebung ist ein zentraler Startpfad fuer Regeln, Workflows, Skills und Helper.
-- Externe Repos sollen nicht mit Cline-Hilfsdateien verschmutzt werden.
+- Cline ist Voraussetzung und wird nicht durch diese Umgebung installiert.
+- Provider-, Modell-, Auth- und KI-Serverdaten sind ausserhalb dieses Projekts.
+- Der aktuelle Ordner ist AIRGAP_CLINE_HOME und bleibt Quelle der Wahrheit.
+- Dauerhafte Cline-Regeln, Skills, Workflows und Helper bleiben im Zentralpfad.
+- Externe Repos erhalten keine dauerhaften .cline, .clinerules, Skills, Workflows oder Helper, solange der Nutzer das nicht explizit verlangt.
 
-## Solaris-Hinweis
+## Variantenhinweise
 
-Solaris-Varianten sind POSIX-best-effort. Nutze sie nur, wenn Cline, Node und die benoetigte Shell-Umgebung dort bereits lauffaehig sind.
+- User-Varianten duerfen keine systemweiten Pfade oder ACLs erzwingen.
+- Admin-Varianten duerfen zentrale Ablage- und Rechtevorbereitung beschreiben, aber keine Providerdaten aendern.
+- Solaris ist best-effort POSIX und darf keine GNU-only-Pflicht annehmen.

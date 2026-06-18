@@ -1,3 +1,4 @@
+<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
 name: mac-cline
 description: Plattformskill fuer Cline_Env_Mac_User mit Fokus auf macOS Cline CLI oder Editor-Integration.
@@ -5,13 +6,12 @@ description: Plattformskill fuer Cline_Env_Mac_User mit Fokus auf macOS Cline CL
 
 # mac-cline
 
-Diese Umgebung ist $(System.Collections.Hashtable.Name).
-
 ## Plattformregeln
 
+- Umgebung: Cline_Env_Mac_User
 - OS: Mac
 - Berechtigungsmodell: User
 - Primaerer Modus: macOS Cline CLI oder Editor-Integration
-- Empfohlener Ablageort: $(System.Collections.Hashtable.RecommendedPath)
+- Empfohlener Ablageort: `~/cline-airgap/Cline_Env_Mac_User`
 
-Nutze die Skripte unter scripts/ dieser Umgebung und beachte, dass Cline bereits eingerichtet ist.
+Nutze die Skripte unter scripts/ dieser Umgebung. Cline muss bereits eingerichtet sein. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.

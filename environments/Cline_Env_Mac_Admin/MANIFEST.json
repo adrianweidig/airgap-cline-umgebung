@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Mac_Admin",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:34.3043963+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:38.1122525+02:00",
     "os":  "Mac",
     "role":  "Admin",
     "family":  "mac",
@@ -9,5 +10,14 @@
     "recommendedPath":  "/Users/Shared/Cline_AirGap/Cline_Env_Mac_Admin oder /opt/cline-airgap/Cline_Env_Mac_Admin",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }

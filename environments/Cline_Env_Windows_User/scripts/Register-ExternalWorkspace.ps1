@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$TargetPath,
-    [string]$RootPath = ""
+    [string]$RootPath = "",
+    [string]$Alias = "",
+    [switch]$DryRun
 )
 
 Set-StrictMode -Version Latest
@@ -15,4 +17,7 @@ $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) { $python = Get-Command python3 -ErrorAction SilentlyContinue }
 if (-not $python) { throw "Python wurde nicht gefunden." }
 
-& $python.Source (Join-Path $RootPath "shared/helpers/python/register_workspace.py") --root $RootPath --target $TargetPath
+$argsList = @((Join-Path $RootPath "shared/helpers/python/register_workspace.py"), "--root", $RootPath, "--target", $TargetPath)
+if ($Alias) { $argsList += @("--alias", $Alias) }
+if ($DryRun) { $argsList += "--dry-run" }
+& $python.Source @argsList

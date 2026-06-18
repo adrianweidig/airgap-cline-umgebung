@@ -1,6 +1,8 @@
+<!-- AIRGAP-CLINE-MANAGED:v2 -->
 # Helper-Script Nutzen
 
-1. Suche Helper zuerst unter `shared/helpers/`.
-2. Fuehre Helper aus dem Zentralpfad aus.
-3. Schreibe Ausgaben nach `workspaces/<hash>/helper-output/`.
-4. Kopiere Helper nicht in das Zielrepo.
+1. Helper zuerst unter `shared/helpers/` suchen.
+2. Zielworkspace zentral registrieren.
+3. Helper aus dem Zentralpfad ausfuehren.
+4. Ausgabe nach `workspaces/<hash>/helper-output/` schreiben.
+5. Helper nicht in das Zielrepo kopieren.

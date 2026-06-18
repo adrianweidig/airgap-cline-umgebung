@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Solaris_Admin",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:34.6812677+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:38.6838944+02:00",
     "os":  "Solaris",
     "role":  "Admin",
     "family":  "solaris",
@@ -9,5 +10,14 @@
     "recommendedPath":  "/opt/cline-airgap/Cline_Env_Solaris_Admin",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }

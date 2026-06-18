@@ -1,7 +1,8 @@
 {
+    "schemaVersion":  2,
     "name":  "Cline_Env_Linux_User",
-    "version":  "0.1.0",
-    "generatedAt":  "2026-06-18T06:50:33.6821614+02:00",
+    "version":  "0.2.0",
+    "generatedAt":  "2026-06-18T08:33:36.6172107+02:00",
     "os":  "Linux",
     "role":  "User",
     "family":  "linux",
@@ -9,5 +10,14 @@
     "recommendedPath":  "~/cline-airgap/Cline_Env_Linux_User",
     "assumesClineAlreadyConfigured":  true,
     "changesProviderConfiguration":  false,
-    "selfContained":  true
+    "containsProviderConfiguration":  false,
+    "containsInstaller":  false,
+    "containsModels":  false,
+    "selfContained":  true,
+    "bootstrap":  {
+                      "supportsDryRun":  true,
+                      "supportsRepair":  true,
+                      "writesBootstrapStatus":  true,
+                      "createsOwnerGuardedUserFolders":  true
+                  }
 }
