@@ -1,18 +1,17 @@
 #!/bin/sh
 set -eu
-if [ "$#" -lt 1 ]; then
-  echo "Nutzung: guard-owner.sh <OWNER.json> [root]" >&2
-  exit 1
-fi
-OWNER_PATH=$1
-ROOT_PATH=${2:-}
-if [ -z "$ROOT_PATH" ]; then
-  SCRIPT_DIR=$(dirname "$0")
-  ROOT_PATH=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
-fi
-if command -v python3 >/dev/null 2>&1; then
-  python3 "$ROOT_PATH/shared/helpers/python/guard_owner.py" --owner "$OWNER_PATH" --explain
-else
-  echo "python3 wurde nicht gefunden." >&2
-  exit 1
-fi
+OWNER_PATH=""
+WRITE=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --owner) OWNER_PATH="$2"; shift 2 ;;
+    --write) WRITE=1; shift ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+ROOT_PATH=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+PYTHON=$(command -v python3 || command -v python || true)
+if [ -z "$PYTHON" ]; then echo "Python was not found." >&2; exit 1; fi
+if [ "$WRITE" -eq 1 ]; then exec "$PYTHON" "$ROOT_PATH/shared/helpers/python/guard_owner.py" --owner "$OWNER_PATH" --write; fi
+exec "$PYTHON" "$ROOT_PATH/shared/helpers/python/guard_owner.py" --owner "$OWNER_PATH"

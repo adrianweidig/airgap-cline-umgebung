@@ -1,15 +1,11 @@
 {
   "schemaVersion": 1,
-  "scope": "workspace-memory-index",
-  "workspaceHash": "TEMPLATE",
-  "files": {
-    "memory": "MEMORY.md",
-    "canonical": "MEMORY.json",
-    "active": "ACTIVE.md",
-    "decisions": "DECISIONS.md",
-    "progress": "PROGRESS.md",
-    "events": "EVENTS.jsonl",
-    "inbox": "inbox/",
-    "locks": "locks/"
-  }
+  "files": [
+    "MEMORY.md",
+    "MEMORY.json",
+    "ACTIVE.md",
+    "DECISIONS.md",
+    "PROGRESS.md",
+    "EVENTS.jsonl"
+  ]
 }

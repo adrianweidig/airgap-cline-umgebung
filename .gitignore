@@ -1,4 +1,4 @@
-# Lokale Codex- und Agenten-Arbeitsdaten
+# Local agent and Codex data
 .codex/
 .agents/
 codex_sessions/
@@ -9,65 +9,47 @@ CODEX_NOTES.md
 *.codex.md
 *.local.md
 
-# Laufzeitdaten der exportierbaren Umgebungen
-**/state/*
+# Runtime data created by exportable environments
+**/state/**
+**/logs/**
+**/audit/**
+**/users/**
+**/workspaces/**/helper-output/**
 !**/state/.gitkeep
-**/logs/*
 !**/logs/.gitkeep
-**/audit/*
 !**/audit/.gitkeep
-**/users/*
 !**/users/.gitkeep
-!**/users/**/.gitkeep
-**/workspaces/*
 !**/workspaces/.gitkeep
-!**/workspaces/**/.gitkeep
-**/workspaces/**/helper-output/*
-!**/workspaces/**/helper-output/.gitkeep
 
-# Release- und Build-Ausgaben
+# Release and package artifacts
 dist/
-release/
 *.7z
 *.zip
+*.tgz
 *.tar
 *.tar.gz
-*.tgz
-*.nupkg
 
-# Drittanbieter-Binaries und Installer duerfen nicht ins Repo
+# Third-party installers, extensions, packages, and model files
 *.exe
 *.msi
 *.msix
 *.appx
 *.vsix
+*.nupkg
 *.dmg
 *.pkg
 *.deb
 *.rpm
-*.AppImage
-
-# KI-Modelle, grosse Daten und Caches
 *.gguf
 *.safetensors
 *.onnx
-*.bin
 *.pt
 *.pth
 *.ckpt
-*.sqlite
-*.parquet
-*.cache
-node_modules/
-.venv/
-venv/
-__pycache__/
-.pytest_cache/
 
-# Lokale Betriebssystem-/Editor-Dateien
-.DS_Store
-Thumbs.db
-desktop.ini
-.idea/
-.vscode/*
-!.vscode/extensions.json
+# Common local build/cache output
+.cache/
+.tmp/
+tmp/
+__pycache__/
+*.pyc

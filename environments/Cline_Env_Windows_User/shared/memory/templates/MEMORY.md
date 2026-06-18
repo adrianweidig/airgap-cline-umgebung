@@ -1,30 +1,29 @@
----
+# Memory
+
 schema: airgap-memory/v1
 scope: workspace
 workspace_hash: TEMPLATE
 revision: 0
-updated_at: 1970-01-01T00:00:00Z
-updated_by: template
----
-# MEMORY
+updated_at: TEMPLATE
+updated_by: TEMPLATE
 
 ## READ_FIRST
-- R-0001 Keine Chatverlaeufe, Rohlogs, Secrets oder Chain-of-Thought in Memory schreiben.
+- R-0001: Do not store secrets, raw logs, chat transcripts, or chain-of-thought in memory.
 
 ## FACTS
-- F-0001 Noch keine dauerhaften Fakten erfasst.
+- No durable facts recorded.
 
 ## DECISIONS
-- D-0001 Noch keine dauerhaften Entscheidungen erfasst.
+- No durable decisions recorded.
 
 ## ACTIVE
-- A-0001 Kein aktiver Fokus gesetzt.
+- No active focus recorded.
 
 ## NEXT
-- N-0001 Keine naechsten Schritte gesetzt.
+- No next steps recorded.
 
 ## DO_NOT
-- X-0001 Keine dauerhaften Cline-Dateien in Zielrepos anlegen, ausser der Nutzer verlangt es ausdruecklich.
+- X-0001: Do not create persistent Cline or memory files in target repositories unless explicitly requested.
 
 ## OPEN_QUESTIONS
-- Q-0001 Keine offenen Fragen erfasst.
+- No open questions recorded.

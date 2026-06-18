@@ -1,23 +1,16 @@
-<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
+AIRGAP-CLINE-MANAGED:v5
 name: airgap-bootstrap
-description: Initialisiert eine bestehende Cline-Installation anhand eines exportierten Air-Gap-Zentralpfads.
+description: Initializes an existing Cline installation from an exported Air-Gap central path.
 ---
-
 # airgap-bootstrap
 
-## Wann verwenden
+Use this skill when the current task matches this description: Initializes an existing Cline installation from an exported Air-Gap central path.
 
-Verwende diesen Skill, wenn die Nutzeraufgabe zu dieser Beschreibung passt: Initialisiert eine bestehende Cline-Installation anhand eines exportierten Air-Gap-Zentralpfads.
+## Procedure
 
-## Vorgehen
-
-1. Bestimme AIRGAP_CLINE_HOME.
-2. Lies AGENTS.md, ENVIRONMENT.md und die relevanten Regeln.
-3. Verwende zentrale Helper und zentrale Workspace-Metadaten.
-4. Schreibe nicht in fremde Nutzer-/Agentenordner.
-5. Veraendere keine Provider-, Modell-, Auth- oder KI-Serverdaten.
-
-## Ergebnis
-
-Dokumentiere Ergebnis, Checks und offene Punkte im eigenen Agentenordner oder im passenden workspaces/<hash>/-Ordner.
+1. Perform the central first-read sequence.
+2. Read `AGENTS.md`, `ENVIRONMENT.md`, and the relevant rules.
+3. Use central helpers and central workspace metadata.
+4. Do not write to foreign user or agent folders.
+5. Do not change provider, model, authentication, or AI-server settings.

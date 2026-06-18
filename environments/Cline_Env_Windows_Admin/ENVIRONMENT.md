@@ -1,28 +1,13 @@
-# Umgebung: Cline_Env_Windows_Admin
+# Environment
 
-| Feld | Wert |
-| --- | --- |
-| OS | Windows |
-| Berechtigungsmodell | Admin |
-| Primaerer Modus | Windows mit VS Code Cline Extension, zentrale Ablage |
-| Empfohlener Ablageort | $(System.Collections.Hashtable.RecommendedPath) |
-| Version | 0.4.0 |
+- Name: `Cline_Env_Windows_Admin`
+- Operating system: Windows
+- Permission role: Admin
+- Platform family: windows
+- Primary usage: Windows with the VS Code Cline extension from a central location
+- Recommended location: `C:\Cline_AirGap\Cline_Env_Windows_Admin or a central network share`
+- Version: `0.5.0`
 
-Admin-Variante fuer zentrale Maschinen-, Opt- oder Share-Ablage. Sie darf optionale Rechtevorbereitung beschreiben, veraendert aber keine Cline-Provider-, Modell- oder Authentifizierungsdaten.
+This folder is self-contained. It may be copied to a stable local path or shared path and then used as the Cline initialization path.
 
-## Grenzen
-
-- Cline ist Voraussetzung und wird nicht durch diese Umgebung installiert.
-- Provider-, Modell-, Auth- und KI-Serverdaten sind ausserhalb dieses Projekts.
-- Der aktuelle Ordner ist AIRGAP_CLINE_HOME und bleibt Quelle der Wahrheit.
-- Dauerhafte Cline-Regeln, Skills, Workflows und Helper bleiben im Zentralpfad.
-- Externe Repos erhalten keine dauerhaften .cline, .clinerules, Skills, Workflows oder Helper, solange der Nutzer das nicht explizit verlangt.
-
-## Variantenhinweise
-
-- User-Varianten duerfen keine systemweiten Pfade oder ACLs erzwingen.
-- Admin-Varianten duerfen zentrale Ablage- und Rechtevorbereitung beschreiben, aber keine Providerdaten aendern.
-- Solaris ist best-effort POSIX und darf keine GNU-only-Pflicht annehmen.
-## First-Read-Betrieb
-
-Die Initialisierung installiert globale Cline-Regelstubs. Diese Stubs sind keine Provider- oder Auth-Konfiguration, sondern nur ein dauerhafter Leseanker. Sie verpflichten Cline, bei jedem Task zuerst die zentrale Umgebung zu lesen und erst danach Zielordner zu bearbeiten.
+Cline must already be installed, configured, and connected to the intended AI server. This environment does not install Cline and does not configure providers, models, authentication, or AI servers.

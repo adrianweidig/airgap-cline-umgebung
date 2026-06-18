@@ -1,21 +1,11 @@
 [CmdletBinding()]
-param(
-    [Parameter(Mandatory = $true)][string]$OwnerPath,
-    [string]$RootPath = ""
-)
-
+param([Parameter(Mandatory = $true)][string]$OwnerPath, [switch]$Write)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
-if ([string]::IsNullOrWhiteSpace($RootPath)) {
-    $RootPath = (Resolve-Path (Join-Path $ScriptDir "..")).Path
-}
+$root = Split-Path -Parent $PSScriptRoot
 $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) { $python = Get-Command python3 -ErrorAction SilentlyContinue }
-if (-not $python) { throw "Python wurde nicht gefunden." }
-
-& $python.Source (Join-Path $RootPath "shared/helpers/python/guard_owner.py") --owner $OwnerPath --explain
-if ($LASTEXITCODE -ne 0) {
-    throw "Owner-Guard hat Schreibzugriff verweigert: $OwnerPath"
-}
+if (-not $python) { throw "Python was not found." }
+$args = @((Join-Path $root "shared/helpers/python/guard_owner.py"), "--owner", $OwnerPath)
+if ($Write) { $args += "--write" }
+& $python.Source @args

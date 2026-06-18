@@ -1,3 +1,3 @@
-# Bash Helper
+# Bash Helpers
 
-Bash-nahe Helper fuer Linux liegen zentral in diesem Ordner.
+Bash helpers live centrally in this folder. Keep target repositories free from copied helper scripts unless explicitly requested.

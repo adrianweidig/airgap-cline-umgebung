@@ -1,62 +1,30 @@
 #!/bin/sh
 set -eu
-
+ROOT_PATH=""
+AGENT_ID="default-agent"
 DRY_RUN=0
 REPAIR=0
-NO_GLOBAL_STUB=0
-ROOT_PATH=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --dry-run) DRY_RUN=1 ;;
-    --repair) REPAIR=1 ;;
-    --no-global-stub) NO_GLOBAL_STUB=1 ;;
-    *) ROOT_PATH=$1 ;;
+    --root) ROOT_PATH="$2"; shift 2 ;;
+    --agent-id) AGENT_ID="$2"; shift 2 ;;
+    --dry-run) DRY_RUN=1; shift ;;
+    --repair) REPAIR=1; shift ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
-  shift
 done
-if [ -z "$ROOT_PATH" ]; then
-  SCRIPT_DIR=$(dirname "$0")
-  ROOT_PATH=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
-fi
-
-for required in START_HIER.md AGENTS.md ENVIRONMENT.md MANIFEST.json shared/rules shared/workflows shared/skills shared/helpers/python; do
-  if [ ! -e "$ROOT_PATH/$required" ]; then
-    echo "Fehlender Bestandteil: $required" >&2
-    exit 1
-  fi
-done
-
-TMP_FILE="${TMPDIR:-/tmp}/airgap-cline-agent-root.$$"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -z "$ROOT_PATH" ]; then ROOT_PATH=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd); fi
+if [ ! -f "$ROOT_PATH/MANIFEST.json" ]; then echo "Invalid Air-Gap Cline environment: $ROOT_PATH" >&2; exit 1; fi
 if [ "$DRY_RUN" -eq 1 ]; then
-  sh "$ROOT_PATH/scripts/new-airgap-cline-user-workspace.sh" --dry-run "$ROOT_PATH" > "$TMP_FILE"
-else
-  sh "$ROOT_PATH/scripts/new-airgap-cline-user-workspace.sh" "$ROOT_PATH" > "$TMP_FILE"
+  echo "Dry run for Cline_Env_Linux_Admin at $ROOT_PATH"
+  echo "Would create or repair the current user folder and sync global Cline stubs."
+  exit 0
 fi
-AGENT_ROOT=$(tail -n 1 "$TMP_FILE")
-rm -f "$TMP_FILE"
-
-if [ "$NO_GLOBAL_STUB" -eq 0 ]; then
-  if [ "$DRY_RUN" -eq 1 ]; then
-    sh "$ROOT_PATH/scripts/sync-cline-global-stubs.sh" --dry-run "$ROOT_PATH"
-  else
-    sh "$ROOT_PATH/scripts/sync-cline-global-stubs.sh" "$ROOT_PATH"
-  fi
-fi
-
-if [ "$DRY_RUN" -eq 0 ]; then
-  mkdir -p "$ROOT_PATH/state"
-  cat > "$ROOT_PATH/state/bootstrap-status.json" <<EOF
-{
-  "schemaVersion": 2,
-  "status": "ok",
-  "environment": "Cline_Env_Linux_Admin",
-  "version": "0.4.0",
-  "rootPath": "$ROOT_PATH",
-  "agentRoot": "$AGENT_ROOT",
-  "dryRun": false,
-  "repair": $REPAIR,
-  "providerChanged": false
-}
+"$SCRIPT_DIR/new-airgap-cline-user-workspace.sh" --root "$ROOT_PATH" --agent-id "$AGENT_ID" >/dev/null
+if [ "$REPAIR" -eq 1 ]; then "$SCRIPT_DIR/sync-cline-global-stubs.sh" --root "$ROOT_PATH" --repair >/dev/null; else "$SCRIPT_DIR/sync-cline-global-stubs.sh" --root "$ROOT_PATH" >/dev/null; fi
+mkdir -p "$ROOT_PATH/state"
+cat > "$ROOT_PATH/state/bootstrap-status.json" <<EOF
+{"schemaVersion":2,"environment":"Cline_Env_Linux_Admin","status":"ok","version":"0.5.0","user":"${USER:-unknown}","host":"$(hostname 2>/dev/null || uname -n)","rootPath":"$ROOT_PATH","providerConfigurationChanged":false}
 EOF
-fi
-echo "Initialisierung abgeschlossen fuer Cline_Env_Linux_Admin."
+echo "Initialization completed for Cline_Env_Linux_Admin."

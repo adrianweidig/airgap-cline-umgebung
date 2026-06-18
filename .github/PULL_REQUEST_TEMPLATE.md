@@ -1,7 +1,14 @@
-## Aenderung
+## Summary
 
-## Geprueft
+-
+
+## Validation
 
 - [ ] `scripts/Test-AllEnvironmentPackages.ps1`
-- [ ] Keine Binaries oder Archive eingecheckt
-- [ ] Alle acht Umgebungen bleiben exportierbar
+- [ ] Release packages were rebuilt when exported environment contents changed.
+
+## Checklist
+
+- [ ] Documentation and generated content are English.
+- [ ] No installers, binaries, model files, VSIX files, or generated archives are committed.
+- [ ] Runtime data remains ignored.

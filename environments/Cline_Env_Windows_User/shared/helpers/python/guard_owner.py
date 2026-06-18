@@ -1,52 +1,35 @@
 #!/usr/bin/env python3
-"""Prueft OWNER.json vor Schreibzugriffen auf Nutzer- oder Agentenordner."""
-
+"""Check OWNER.json before writing to user or agent folders."""
 from __future__ import annotations
-
-import argparse
-import json
-import os
-import platform
+import argparse, json, os, socket
 from pathlib import Path
 
-
-def current_username() -> str:
-    return os.environ.get("USERNAME") or os.environ.get("USER") or "unknown"
-
-
-def current_domain() -> str:
-    return os.environ.get("USERDOMAIN") or platform.node() or "unknown"
-
+def current_identity() -> dict:
+    return {
+        "user": os.environ.get("USERNAME") or os.environ.get("USER") or "unknown",
+        "domain": os.environ.get("USERDOMAIN", ""),
+        "host": socket.gethostname(),
+    }
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="OWNER.json pruefen")
-    parser.add_argument("--owner", required=True, help="Pfad zu OWNER.json")
-    parser.add_argument("--explain", action="store_true", help="JSON-Ergebnis ausgeben")
+    parser = argparse.ArgumentParser(description="Validate OWNER.json for the current user")
+    parser.add_argument("--owner", required=True)
+    parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
-
-    owner_path = Path(args.owner)
-    if not owner_path.exists():
-        print(f"OWNER.json fehlt: {owner_path}")
-        return 3
-
-    owner = json.loads(owner_path.read_text(encoding="utf-8"))
-    expected_user = owner.get("username")
-    expected_domain = owner.get("domain") or owner.get("host")
-    user_ok = expected_user == current_username()
-    domain_ok = not expected_domain or expected_domain in {current_domain(), platform.node()}
-    ok = bool(user_ok and domain_ok)
-    result = {
-        "ok": ok,
-        "ownerPath": str(owner_path),
-        "expectedUser": expected_user,
-        "actualUser": current_username(),
-        "expectedDomainOrHost": expected_domain,
-        "actualDomainOrHost": current_domain(),
-    }
-    if args.explain or not ok:
-        print(json.dumps(result, indent=2))
-    return 0 if ok else 2
-
+    path = Path(args.owner)
+    if not path.is_file():
+        raise SystemExit(f"OWNER.json not found: {path}")
+    owner = json.loads(path.read_text(encoding="utf-8"))
+    ident = current_identity()
+    allowed = owner.get("user") == ident["user"]
+    if owner.get("domain"):
+        allowed = allowed and owner["domain"] == ident["domain"]
+    if owner.get("host"):
+        allowed = allowed and owner["host"] == ident["host"]
+    print(json.dumps({"allowed": allowed, "owner": owner, "current": ident}, indent=2, sort_keys=True))
+    if args.write and not allowed:
+        raise SystemExit("Current identity may not write to this owner folder")
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())

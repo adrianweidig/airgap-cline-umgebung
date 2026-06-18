@@ -1,17 +1,16 @@
-<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
+AIRGAP-CLINE-MANAGED:v5
 name: mac-cline
-description: Plattformskill fuer Cline_Env_Mac_User mit Fokus auf macOS Cline CLI oder Editor-Integration.
+description: macOS-specific skill for CLI or editor-adjacent Cline usage. Environment: Cline_Env_Mac_User. Primary mode: macOS Cline usage from a user-owned location.
 ---
-
 # mac-cline
 
-## Plattformregeln
+Use this skill when the current task matches this description: macOS-specific skill for CLI or editor-adjacent Cline usage. Environment: Cline_Env_Mac_User. Primary mode: macOS Cline usage from a user-owned location.
 
-- Umgebung: Cline_Env_Mac_User
-- OS: Mac
-- Berechtigungsmodell: User
-- Primaerer Modus: macOS Cline CLI oder Editor-Integration
-- Empfohlener Ablageort: `~/cline-airgap/Cline_Env_Mac_User`
+## Procedure
 
-Nutze die Skripte unter scripts/ dieser Umgebung. Cline muss bereits eingerichtet sein. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.
+1. Perform the central first-read sequence.
+2. Read `AGENTS.md`, `ENVIRONMENT.md`, and the relevant rules.
+3. Use central helpers and central workspace metadata.
+4. Do not write to foreign user or agent folders.
+5. Do not change provider, model, authentication, or AI-server settings.

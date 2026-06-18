@@ -1,95 +1,58 @@
 #!/bin/sh
 set -eu
-
-DRY_RUN=0
 ROOT_PATH=""
+AGENT_ID="default-agent"
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --dry-run) DRY_RUN=1 ;;
-    *) ROOT_PATH=$1 ;;
+    --root) ROOT_PATH="$2"; shift 2 ;;
+    --agent-id) AGENT_ID="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
-  shift
 done
-if [ -z "$ROOT_PATH" ]; then
-  SCRIPT_DIR=$(dirname "$0")
-  ROOT_PATH=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
-fi
-
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -z "$ROOT_PATH" ]; then ROOT_PATH=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd); fi
+USER_NAME="${USER:-unknown}"
 HOST_NAME=$(hostname 2>/dev/null || uname -n)
-USER_NAME=${USER:-$(id -un 2>/dev/null || echo unknown)}
-UID_VALUE=$(id -u 2>/dev/null || echo unknown)
-SAFE=$(printf "%s_%s" "$HOST_NAME" "$USER_NAME" | tr -c 'A-Za-z0-9_.-' '_')
-USER_ROOT="$ROOT_PATH/users/solaris/$SAFE"
-AGENT_ID=$(date '+%Y%m%d-%H%M%S')-$$
-AGENT_ROOT="$USER_ROOT/agents/$AGENT_ID"
-OWNER_PATH="$USER_ROOT/OWNER.json"
-
-if [ -f "$OWNER_PATH" ]; then
-  if ! grep -q "\"username\": \"$USER_NAME\"" "$OWNER_PATH"; then
-    echo "OWNER.json gehoert nicht zum aktuellen Nutzer: $OWNER_PATH" >&2
-    exit 2
-  fi
-fi
-
-if [ "$DRY_RUN" -eq 1 ]; then
-  printf '{"dryRun":true,"userRoot":"%s","agentRoot":"%s","ownerPath":"%s"}\n' "$USER_ROOT" "$AGENT_ROOT" "$OWNER_PATH"
-  exit 0
-fi
-
-mkdir -p "$AGENT_ROOT" "$AGENT_ROOT/memory" "$AGENT_ROOT/outbox/memory-proposals" "$USER_ROOT/memory" "$USER_ROOT/scratch" "$USER_ROOT/notes" "$USER_ROOT/logs" "$USER_ROOT/outbox"
-cat > "$OWNER_PATH" <<EOF
-{
-  "schemaVersion": 1,
-  "environment": "Cline_Env_Solaris_Admin",
-  "os": "Solaris",
-  "role": "Admin",
-  "host": "$HOST_NAME",
-  "username": "$USER_NAME",
-  "uid": "$UID_VALUE",
-  "writableBy": "owner-only"
-}
+OWNER_NAME=$(printf '%s_%s' "$HOST_NAME" "$USER_NAME" | sed 's/[^A-Za-z0-9_.-]/_/g')
+SAFE_AGENT=$(printf '%s' "$AGENT_ID" | sed 's/[^A-Za-z0-9_.-]/_/g')
+FAMILY=$(basename "$ROOT_PATH" | awk -F_ '{print tolower($3)}')
+case "$FAMILY" in mac) FAMILY="mac" ;; linux) FAMILY="linux" ;; solaris) FAMILY="solaris" ;; *) FAMILY="posix" ;; esac
+USER_ROOT="$ROOT_PATH/users/$FAMILY/$OWNER_NAME"
+AGENT_ROOT="$USER_ROOT/agents/$SAFE_AGENT"
+mkdir -p "$USER_ROOT/agents" "$USER_ROOT/scratch" "$USER_ROOT/notes" "$USER_ROOT/logs" "$USER_ROOT/outbox" "$USER_ROOT/memory" "$AGENT_ROOT/memory" "$AGENT_ROOT/outbox/memory-proposals"
+cat > "$USER_ROOT/OWNER.json" <<EOF
+{"schemaVersion":1,"platform":"$FAMILY","user":"$USER_NAME","host":"$HOST_NAME"}
 EOF
-cat > "$USER_ROOT/IMMER_LESEN.md" <<EOF
-# Immer Lesen
+cat > "$USER_ROOT/ALWAYS_READ.md" <<EOF
+# Always Read
 
-Dieser Ordner gehoert zu $HOST_NAME/$USER_NAME. Wenn du nicht dieser Nutzer bist, schreibe nicht in diesen Ordner.
+This folder belongs to $HOST_NAME/$USER_NAME. If you are not this user, do not write here.
+
+Allowed write areas: the owner's agent folder, scratch, notes, logs, outbox, and memory.
 EOF
-cat > "$AGENT_ROOT/AGENT_POLICY.md" <<EOF
-# Agent Policy
+[ -f "$USER_ROOT/memory/USER_MEMORY.md" ] || printf '# User Memory
 
-Arbeite nur fuer den Owner dieses Nutzerordners. Pruefe OWNER.json vor Schreibzugriffen. Nutze zentrale Helper aus AIRGAP_CLINE_HOME.
-EOF
-printf "# Aktuelle Aufgabe\n\nNoch keine Aufgabe dokumentiert.\n" > "$AGENT_ROOT/CURRENT_TASK.md"
-cat > "$USER_ROOT/memory/USER_MEMORY.md" <<'EOF'
-# User Memory
+- No durable user preferences recorded yet.
+' > "$USER_ROOT/memory/USER_MEMORY.md"
+printf '# Agent Policy
 
-scope: user
-schema: airgap-user-memory/v1
+Work only for the owner of this user folder. Check OWNER.json before writes. Use central helpers from AIRGAP_CLINE_HOME.
+' > "$AGENT_ROOT/AGENT_POLICY.md"
+printf '# Current Task
 
-## READ_FIRST
-- Keine Secrets, Tokens, Passwoerter oder privaten Rohdaten speichern.
+No task recorded yet.
+' > "$AGENT_ROOT/CURRENT_TASK.md"
+printf '[]
+' > "$AGENT_ROOT/WORKSPACE_BINDINGS.json"
+printf '# Session Memory
 
-## PREFERENCES
-- Noch keine dauerhaften Nutzerpraeferenzen erfasst.
+## Current Task
+- No task recorded yet.
 
-## DO_NOT
-- Nicht in fremde Nutzer- oder Agentenordner schreiben.
-EOF
-cat > "$AGENT_ROOT/memory/SESSION.md" <<'EOF'
-# Session Memory
+## Summary
+- No summary recorded yet.
 
-scope: agent-session
-schema: airgap-session-memory/v1
-
-## TASK
-- Noch keine Aufgabe dokumentiert.
-
-## SUMMARY
-- Noch keine Zusammenfassung erfasst.
-
-## MEMORY_PROPOSALS
-- Dauerhafte Erkenntnisse als Vorschlaege nach `outbox/memory-proposals/` schreiben.
-EOF
-printf "{}\n" > "$AGENT_ROOT/WORKSPACE_BINDINGS.json"
-mkdir -p "$ROOT_PATH/state"
-printf "%s\n" "$AGENT_ROOT"
+## Durable Proposals
+- Write durable findings as proposals under outbox/memory-proposals/.
+' > "$AGENT_ROOT/memory/SESSION.md"
+echo "$AGENT_ROOT"

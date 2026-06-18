@@ -1,23 +1,9 @@
 [CmdletBinding()]
-param(
-    [Parameter(Mandatory = $true)][string]$TargetPath,
-    [string]$RootPath = "",
-    [string]$Alias = "",
-    [switch]$DryRun
-)
-
+param([string]$RootPath = "", [Parameter(Mandatory = $true)][string]$TargetPath, [string]$Alias = "")
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
-if ([string]::IsNullOrWhiteSpace($RootPath)) {
-    $RootPath = (Resolve-Path (Join-Path $ScriptDir "..")).Path
-}
+if ([string]::IsNullOrWhiteSpace($RootPath)) { $RootPath = Split-Path -Parent $PSScriptRoot }
 $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) { $python = Get-Command python3 -ErrorAction SilentlyContinue }
-if (-not $python) { throw "Python wurde nicht gefunden." }
-
-$argsList = @((Join-Path $RootPath "shared/helpers/python/register_workspace.py"), "--root", $RootPath, "--target", $TargetPath)
-if ($Alias) { $argsList += @("--alias", $Alias) }
-if ($DryRun) { $argsList += "--dry-run" }
-& $python.Source @argsList
+if (-not $python) { throw "Python was not found." }
+& $python.Source (Join-Path $RootPath "shared/helpers/python/register_workspace.py") --root $RootPath --target $TargetPath --alias $Alias

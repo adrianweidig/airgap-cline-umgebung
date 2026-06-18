@@ -1,15 +1,16 @@
-# Sicherheitsrichtlinie
+# Security Policy
 
-## Grundsatz
+## Scope
 
-Dieses Projekt liefert Cline-Regeln, Workflows, Skills und lokale Helper-Skripte. Es enthaelt keine Geheimnisse, keine Provider-Konfiguration und keine Drittanbieter-Binaries.
+This project provides Cline rules, workflows, skills, local helper scripts, and memory templates. It contains no secrets, provider configuration, third-party binaries, model files, or installers.
 
-## Sicherheitsmeldungen
+## Reporting Security Issues
 
-Bitte melde Sicherheitsprobleme nicht in oeffentlichen Issues, wenn sie konkrete Schwachstellen, Tokens, interne Pfade oder missbrauchbare Details enthalten. Nutze stattdessen einen privaten Kontaktweg des Repository-Betreibers.
+Do not report sensitive security issues in public issues when they contain concrete vulnerabilities, tokens, internal paths, or abuse-ready details. Use a private contact path provided by the repository owner.
 
-## Air-Gap-Hinweise
+## Security Expectations
 
-- Keine Datei in diesem Repo darf verlangen, dass in der Zielumgebung Internetzugriff besteht.
-- Provider-, API-Key- und Modellserverkonfigurationen sind ausserhalb dieses Projekts zu verwalten.
-- Cline-Agenten muessen fremde Nutzer- und Agentenordner respektieren.
+- Cline agents must respect foreign user and agent folders.
+- Provider, model, authentication, and AI-server settings are outside this project.
+- Target repositories must not receive persistent Cline infrastructure files unless explicitly requested by the user.
+- Runtime memory must not contain secrets, raw chat logs, or chain-of-thought.

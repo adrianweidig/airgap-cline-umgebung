@@ -1,374 +1,186 @@
 #!/usr/bin/env python3
-"""Koordiniertes Workspace-Memory fuer Air-Gap-Cline-Umgebungen."""
-
+"""Manage coordinated workspace memory for Air-Gap Cline environments."""
 from __future__ import annotations
-
-import argparse
-import hashlib
-import json
-import os
-import re
-import shutil
-import sys
-import time
-import uuid
+import argparse, hashlib, json, time
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCHEMA_VERSION = 1
-SECTION_MAP = {
-    "read_first": ("readFirst", "R", "READ_FIRST"),
-    "fact": ("facts", "F", "FACTS"),
-    "decision": ("decisions", "D", "DECISIONS"),
-    "active": ("active", "A", "ACTIVE"),
-    "next": ("next", "N", "NEXT"),
-    "do_not": ("doNot", "X", "DO_NOT"),
-    "open_question": ("openQuestions", "Q", "OPEN_QUESTIONS"),
-}
-
+TARGET = {"fact": "facts", "decision": "decisions", "active": "active", "next": "next", "do_not": "doNot", "question": "openQuestions", "read_first": "readFirst"}
+PREFIX = {"fact": "F", "decision": "D", "active": "A", "next": "N", "do_not": "X", "question": "Q", "read_first": "R"}
+SECTIONS = ["readFirst", "facts", "decisions", "active", "next", "doNot", "openQuestions"]
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+def sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else ""
 
-def current_user() -> str:
-    return os.environ.get("USERNAME") or os.environ.get("USER") or "unknown"
+def memory_dir(root: Path, workspace_hash: str) -> Path:
+    workspace = root / "workspaces" / workspace_hash
+    if not workspace.is_dir():
+        raise SystemExit(f"Workspace does not exist: {workspace}")
+    path = workspace / "memory"
+    (path / "inbox").mkdir(parents=True, exist_ok=True)
+    (path / "locks").mkdir(exist_ok=True)
+    return path
 
-
-def atomic_write(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + f".tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}")
-    tmp.write_text(text, encoding="utf-8")
-    tmp.replace(path)
-
-
-def sha256_file(path: Path) -> str:
-    if not path.exists():
-        return ""
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def workspace_dir(root: Path, ref: str) -> Path:
-    candidate = Path(ref)
-    if candidate.exists() and (candidate / "WORKSPACE.json").exists():
-        return candidate.resolve(strict=False)
-    return (root / "workspaces" / ref).resolve(strict=False)
-
-
-def memory_dir(workspace: Path) -> Path:
-    return workspace / "memory"
-
-
-def load_workspace_hash(workspace: Path) -> str:
-    manifest = workspace / "WORKSPACE.json"
-    if manifest.exists():
-        data = json.loads(manifest.read_text(encoding="utf-8-sig"))
-        return str(data.get("hash") or workspace.name)
-    return workspace.name
-
-
-def default_memory(workspace_hash: str, user: str) -> dict:
+def default_state(workspace_hash: str, agent_id: str) -> dict:
     stamp = now()
     return {
-        "schemaVersion": SCHEMA_VERSION,
+        "schemaVersion": 1,
         "scope": "workspace",
         "workspaceHash": workspace_hash,
         "revision": 0,
         "updatedAt": stamp,
-        "updatedBy": user,
-        "sections": {
-            "readFirst": [{"id": "R-0001", "text": "Keine Secrets, Rohlogs, Chatverlaeufe oder Chain-of-Thought in Memory schreiben.", "createdAt": stamp, "createdBy": user}],
-            "facts": [],
-            "decisions": [],
-            "active": [],
-            "next": [],
-            "doNot": [{"id": "X-0001", "text": "Keine dauerhaften Cline- oder Memory-Dateien in Zielrepos anlegen, ausser der Nutzer verlangt es ausdruecklich.", "createdAt": stamp, "createdBy": user}],
-            "openQuestions": [],
-        },
+        "updatedBy": agent_id,
+        "readFirst": [{"id": "R-0001", "text": "Do not store secrets, raw logs, chat transcripts, or chain-of-thought in memory.", "createdAt": stamp, "createdBy": agent_id}],
+        "facts": [],
+        "decisions": [],
+        "active": [],
+        "next": [],
+        "doNot": [{"id": "X-0001", "text": "Do not create persistent Cline or memory files in target repositories unless the user explicitly requests it.", "createdAt": stamp, "createdBy": agent_id}],
+        "openQuestions": [],
     }
 
+def load_state(path: Path, workspace_hash: str, agent_id: str) -> dict:
+    file_path = path / "MEMORY.json"
+    if file_path.exists():
+        return json.loads(file_path.read_text(encoding="utf-8"))
+    return default_state(workspace_hash, agent_id)
 
-def load_memory(mem_dir: Path) -> dict:
-    path = mem_dir / "MEMORY.json"
-    if not path.exists():
-        raise SystemExit(f"MEMORY.json fehlt: {path}")
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+def write_json(path: Path, data: dict) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.replace(path)
 
+def section(title: str, items: list[dict], empty: str) -> list[str]:
+    lines = [f"## {title}"]
+    if items:
+        lines.extend(f"- {item['id']}: {item['text']}" for item in items)
+    else:
+        lines.append(f"- {empty}")
+    lines.append("")
+    return lines
 
-def save_json(path: Path, data: dict) -> None:
-    atomic_write(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
-
-
-def render_memory_md(data: dict) -> str:
+def render(path: Path, state: dict) -> None:
     lines = [
-        "---",
+        "# Memory",
+        "",
         "schema: airgap-memory/v1",
-        "scope: workspace",
-        f"workspace_hash: {data['workspaceHash']}",
-        f"revision: {data['revision']}",
-        f"updated_at: {data['updatedAt']}",
-        f"updated_by: {data['updatedBy']}",
-        "---",
-        "# MEMORY",
+        f"scope: {state['scope']}",
+        f"workspace_hash: {state['workspaceHash']}",
+        f"revision: {state['revision']}",
+        f"updated_at: {state['updatedAt']}",
+        f"updated_by: {state['updatedBy']}",
         "",
     ]
-    sections = data["sections"]
-    for _, (key, _, title) in SECTION_MAP.items():
-        lines.append(f"## {title}")
-        entries = sections.get(key, [])
-        if entries:
-            for entry in entries:
-                text = str(entry["text"]).replace("\n", " ").strip()
-                lines.append(f"- {entry['id']} {text}")
-        else:
-            lines.append("- none")
-        lines.append("")
-    return "\n".join(lines).rstrip() + "\n"
+    lines += section("READ_FIRST", state.get("readFirst", []), "No additional read-first items.")
+    lines += section("FACTS", state.get("facts", []), "No durable facts recorded.")
+    lines += section("DECISIONS", state.get("decisions", []), "No durable decisions recorded.")
+    lines += section("ACTIVE", state.get("active", []), "No active focus recorded.")
+    lines += section("NEXT", state.get("next", []), "No next steps recorded.")
+    lines += section("DO_NOT", state.get("doNot", []), "No additional prohibitions recorded.")
+    lines += section("OPEN_QUESTIONS", state.get("openQuestions", []), "No open questions recorded.")
+    (path / "MEMORY.md").write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    (path / "ACTIVE.md").write_text("\n".join(section("ACTIVE", state.get("active", []), "No active focus recorded.")), encoding="utf-8")
+    (path / "DECISIONS.md").write_text("\n".join(section("DECISIONS", state.get("decisions", []), "No durable decisions recorded.")), encoding="utf-8")
+    (path / "PROGRESS.md").write_text("\n".join(section("NEXT", state.get("next", []), "No next steps recorded.")), encoding="utf-8")
+    write_json(path / "INDEX.json", {"schemaVersion": 1, "revision": state["revision"], "updatedAt": state["updatedAt"], "files": ["MEMORY.md", "MEMORY.json", "ACTIVE.md", "DECISIONS.md", "PROGRESS.md", "EVENTS.jsonl"]})
 
+def append_event(path: Path, event: dict) -> None:
+    with (path / "EVENTS.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event, sort_keys=True) + "\n")
 
-def render_detail_files(mem_dir: Path, data: dict) -> None:
-    sections = data["sections"]
-    active = "\n".join(f"- {e['id']} {e['text']}" for e in sections.get("active", [])) or "- none"
-    decisions = "\n".join(f"- {e['id']} {e['text']}" for e in sections.get("decisions", [])) or "- none"
-    next_items = "\n".join(f"- {e['id']} {e['text']}" for e in sections.get("next", [])) or "- none"
-    questions = "\n".join(f"- {e['id']} {e['text']}" for e in sections.get("openQuestions", [])) or "- none"
-    atomic_write(mem_dir / "ACTIVE.md", f"# Active\n\n{active}\n")
-    atomic_write(mem_dir / "DECISIONS.md", f"# Decisions\n\n{decisions}\n")
-    atomic_write(mem_dir / "PROGRESS.md", f"# Progress\n\n## Next\n{next_items}\n\n## Open Questions\n{questions}\n")
-    index = {
-        "schemaVersion": 1,
-        "scope": "workspace-memory-index",
-        "workspaceHash": data["workspaceHash"],
-        "revision": data["revision"],
-        "files": {
-            "memory": "MEMORY.md",
-            "canonical": "MEMORY.json",
-            "active": "ACTIVE.md",
-            "decisions": "DECISIONS.md",
-            "progress": "PROGRESS.md",
-            "events": "EVENTS.jsonl",
-            "inbox": "inbox/",
-            "locks": "locks/",
-        },
-    }
-    save_json(mem_dir / "INDEX.json", index)
+def next_id(state: dict, item_type: str) -> str:
+    section_name = TARGET[item_type]
+    prefix = PREFIX[item_type]
+    used = []
+    for item in state.get(section_name, []):
+        value = str(item.get("id", ""))
+        if value.startswith(prefix + "-"):
+            try:
+                used.append(int(value.split("-", 1)[1]))
+            except ValueError:
+                pass
+    return f"{prefix}-{(max(used) if used else 0) + 1:04d}"
 
+def action_init(args) -> None:
+    path = memory_dir(args.root, args.workspace)
+    state = load_state(path, args.workspace, args.agent_id)
+    write_json(path / "MEMORY.json", state)
+    render(path, state)
+    append_event(path, {"type": "init", "at": now(), "agentId": args.agent_id, "revision": state["revision"]})
+    print(path / "MEMORY.md")
 
-def render_all(mem_dir: Path, data: dict) -> None:
-    save_json(mem_dir / "MEMORY.json", data)
-    atomic_write(mem_dir / "MEMORY.md", render_memory_md(data))
-    render_detail_files(mem_dir, data)
+def action_read(args) -> None:
+    path = memory_dir(args.root, args.workspace)
+    if not (path / "MEMORY.md").exists():
+        action_init(args)
+    print((path / "MEMORY.md").read_text(encoding="utf-8"))
 
+def action_propose(args) -> None:
+    path = memory_dir(args.root, args.workspace)
+    state = load_state(path, args.workspace, args.agent_id)
+    write_json(path / "MEMORY.json", state)
+    render(path, state)
+    proposal = {"schemaVersion": 1, "workspaceHash": args.workspace, "type": args.type, "text": args.text.strip(), "agentId": args.agent_id, "createdAt": now(), "parentRevision": state.get("revision", 0), "parentSha256": sha(path / "MEMORY.json")}
+    target = path / "inbox" / f"{int(time.time())}-{args.agent_id}-{args.type}.memory.json"
+    write_json(target, proposal)
+    append_event(path, {"type": "propose", "at": now(), "agentId": args.agent_id, "proposal": str(target)})
+    print(target)
 
-def append_event(mem_dir: Path, event_type: str, data: dict, details: dict | None = None) -> None:
-    event = {
-        "schemaVersion": 1,
-        "eventId": uuid.uuid4().hex,
-        "eventType": event_type,
-        "workspaceHash": data["workspaceHash"],
-        "revision": data["revision"],
-        "createdAt": now(),
-        "createdBy": current_user(),
-        "details": details or {},
-    }
-    with (mem_dir / "EVENTS.jsonl").open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(event, ensure_ascii=False) + "\n")
+def action_apply(args) -> None:
+    path = memory_dir(args.root, args.workspace)
+    state = load_state(path, args.workspace, args.agent_id)
+    proposal = Path(args.proposal)
+    data = json.loads(proposal.read_text(encoding="utf-8"))
+    if data.get("parentSha256") and data["parentSha256"] != sha(path / "MEMORY.json"):
+        print(f"Conflict: parentSha256 does not match. Proposal remains in inbox: {proposal}")
+        return
+    item_type = data["type"]
+    target_section = TARGET[item_type]
+    item = {"id": next_id(state, item_type), "text": data["text"], "createdAt": now(), "createdBy": data.get("agentId", args.agent_id)}
+    state.setdefault(target_section, []).append(item)
+    state["revision"] = int(state.get("revision", 0)) + 1
+    state["updatedAt"] = now()
+    state["updatedBy"] = args.agent_id
+    write_json(path / "MEMORY.json", state)
+    render(path, state)
+    append_event(path, {"type": "apply", "at": now(), "agentId": args.agent_id, "itemId": item["id"], "revision": state["revision"]})
+    print(item["id"])
 
-
-def acquire_lock(mem_dir: Path, holder: str, ttl: int = 120) -> Path:
-    locks = mem_dir / "locks"
-    locks.mkdir(parents=True, exist_ok=True)
-    lock = locks / "LOCK.json"
-    current = int(time.time())
-    if lock.exists():
-        try:
-            data = json.loads(lock.read_text(encoding="utf-8"))
-            if int(data.get("expiresEpoch", 0)) > current:
-                raise SystemExit(f"Memory ist gesperrt durch {data.get('holder')}: {lock}")
-        except json.JSONDecodeError:
-            pass
-    payload = {"schemaVersion": 1, "holder": holder, "createdAt": now(), "expiresEpoch": current + ttl}
-    atomic_write(lock, json.dumps(payload, indent=2) + "\n")
-    return lock
-
-
-def release_lock(lock: Path) -> None:
-    try:
-        lock.unlink()
-    except FileNotFoundError:
-        pass
-
-
-def init_memory(args: argparse.Namespace) -> int:
-    root = Path(args.root).resolve(strict=False)
-    workspace = workspace_dir(root, args.workspace)
-    if not workspace.exists():
-        raise SystemExit(f"Workspace existiert nicht: {workspace}")
-    mem_dir = memory_dir(workspace)
-    mem_dir.mkdir(parents=True, exist_ok=True)
-    for sub in ("inbox", "locks", "applied"):
-        (mem_dir / sub).mkdir(exist_ok=True)
-    if (mem_dir / "MEMORY.json").exists() and not args.force:
-        data = load_memory(mem_dir)
-    else:
-        data = default_memory(load_workspace_hash(workspace), args.agent_id or current_user())
-    if not args.dry_run:
-        render_all(mem_dir, data)
-        events = mem_dir / "EVENTS.jsonl"
-        if not events.exists():
-            events.write_text("", encoding="utf-8")
-        append_event(mem_dir, "init", data)
-    print(str(mem_dir))
-    return 0
-
-
-def read_memory(args: argparse.Namespace) -> int:
-    mem = memory_dir(workspace_dir(Path(args.root).resolve(strict=False), args.workspace)) / "MEMORY.md"
-    if not mem.exists():
-        raise SystemExit(f"MEMORY.md fehlt: {mem}")
-    print(mem.read_text(encoding="utf-8"))
-    return 0
-
-
-def next_id(data: dict, section_key: str, prefix: str) -> str:
-    max_id = 0
-    for entry in data["sections"].get(section_key, []):
-        match = re.match(r"^[A-Z]-(\d{4,})$", str(entry.get("id", "")))
-        if match:
-            max_id = max(max_id, int(match.group(1)))
-    return f"{prefix}-{max_id + 1:04d}"
-
-
-def proposal_text(path: Path, metadata: dict, text: str) -> str:
-    return "---\n" + json.dumps(metadata, indent=2, ensure_ascii=False) + "\n---\n" + text.strip() + "\n"
-
-
-def parse_proposal(path: Path) -> tuple[dict, str]:
-    content = path.read_text(encoding="utf-8-sig")
-    if not content.startswith("---\n"):
-        raise SystemExit(f"Ungueltiger Memory-Vorschlag: {path}")
-    _, rest = content.split("---\n", 1)
-    meta_text, body = rest.split("\n---\n", 1)
-    return json.loads(meta_text), body.strip()
-
-
-def propose_memory(args: argparse.Namespace) -> int:
-    root = Path(args.root).resolve(strict=False)
-    workspace = workspace_dir(root, args.workspace)
-    mem_dir = memory_dir(workspace)
-    if not (mem_dir / "MEMORY.json").exists():
-        init_args = argparse.Namespace(root=str(root), workspace=args.workspace, agent_id=args.agent_id, force=False, dry_run=False)
-        init_memory(init_args)
-    current_sha = sha256_file(mem_dir / "MEMORY.json")
-    proposal_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-    metadata = {
-        "schemaVersion": 1,
-        "proposalId": proposal_id,
-        "workspaceHash": load_workspace_hash(workspace),
-        "type": args.type,
-        "parentSha256": args.parent_sha256 or current_sha,
-        "agentId": args.agent_id or current_user(),
-        "createdAt": now(),
-        "createdBy": current_user(),
-    }
-    target = mem_dir / "inbox" / f"{proposal_id}.memory.md"
-    atomic_write(target, proposal_text(target, metadata, args.text))
-    print(str(target))
-    return 0
-
-
-def apply_memory(args: argparse.Namespace) -> int:
-    root = Path(args.root).resolve(strict=False)
-    workspace = workspace_dir(root, args.workspace)
-    mem_dir = memory_dir(workspace)
-    data = load_memory(mem_dir)
-    proposal = Path(args.proposal).resolve(strict=False)
-    metadata, body = parse_proposal(proposal)
-    current_sha = sha256_file(mem_dir / "MEMORY.json")
-    if metadata.get("parentSha256") and metadata["parentSha256"] != current_sha:
-        print(f"Konflikt: parentSha256 passt nicht. Vorschlag bleibt in inbox: {proposal}")
-        return 2
-    section_key, prefix, _ = SECTION_MAP[metadata["type"]]
-    lock = acquire_lock(mem_dir, args.agent_id or current_user())
-    try:
-        data = load_memory(mem_dir)
-        entry = {
-            "id": next_id(data, section_key, prefix),
-            "text": body.replace("\n", " ").strip(),
-            "createdAt": now(),
-            "createdBy": metadata.get("agentId") or current_user(),
-        }
-        data["sections"][section_key].append(entry)
-        data["revision"] = int(data.get("revision", 0)) + 1
-        data["updatedAt"] = now()
-        data["updatedBy"] = args.agent_id or current_user()
-        render_all(mem_dir, data)
-        append_event(mem_dir, "apply", data, {"proposalId": metadata.get("proposalId"), "entryId": entry["id"], "type": metadata["type"]})
-        applied = mem_dir / "applied" / proposal.name
-        applied.parent.mkdir(exist_ok=True)
-        shutil.move(str(proposal), str(applied))
-    finally:
-        release_lock(lock)
-    print(entry["id"])
-    return 0
-
-
-def render_memory(args: argparse.Namespace) -> int:
-    mem_dir = memory_dir(workspace_dir(Path(args.root).resolve(strict=False), args.workspace))
-    data = load_memory(mem_dir)
-    render_all(mem_dir, data)
-    print(str(mem_dir / "MEMORY.md"))
-    return 0
-
-
-def validate_memory(args: argparse.Namespace) -> int:
-    mem_dir = memory_dir(workspace_dir(Path(args.root).resolve(strict=False), args.workspace))
-    required = ["MEMORY.json", "MEMORY.md", "ACTIVE.md", "DECISIONS.md", "PROGRESS.md", "INDEX.json", "EVENTS.jsonl"]
-    missing = [name for name in required if not (mem_dir / name).exists()]
+def action_validate(args) -> None:
+    path = memory_dir(args.root, args.workspace)
+    state = load_state(path, args.workspace, args.agent_id)
+    missing = [name for name in ["MEMORY.md", "MEMORY.json", "ACTIVE.md", "DECISIONS.md", "PROGRESS.md"] if not (path / name).exists()]
     if missing:
-        raise SystemExit("Fehlende Memory-Dateien: " + ", ".join(missing))
-    data = load_memory(mem_dir)
-    for key, _, _ in SECTION_MAP.values():
-        if key not in data.get("sections", {}):
-            raise SystemExit(f"Fehlender Memory-Abschnitt: {key}")
-    print("Memory valide: " + str(mem_dir))
-    return 0
-
+        raise SystemExit(f"Missing memory files: {', '.join(missing)}")
+    for key in SECTIONS:
+        if key not in state:
+            raise SystemExit(f"Missing memory section: {key}")
+    print("memory valid")
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Koordiniertes Air-Gap-Cline-Memory")
-    parser.add_argument("--root", required=True, help="AIRGAP_CLINE_HOME")
-    sub = parser.add_subparsers(dest="command", required=True)
-    p_init = sub.add_parser("init")
-    p_init.add_argument("--workspace", required=True)
-    p_init.add_argument("--agent-id", default="")
-    p_init.add_argument("--force", action="store_true")
-    p_init.add_argument("--dry-run", action="store_true")
-    p_init.set_defaults(func=init_memory)
-    p_read = sub.add_parser("read")
-    p_read.add_argument("--workspace", required=True)
-    p_read.set_defaults(func=read_memory)
-    p_prop = sub.add_parser("propose")
-    p_prop.add_argument("--workspace", required=True)
-    p_prop.add_argument("--type", required=True, choices=sorted(SECTION_MAP.keys()))
-    p_prop.add_argument("--text", required=True)
-    p_prop.add_argument("--agent-id", default="")
-    p_prop.add_argument("--parent-sha256", default="")
-    p_prop.set_defaults(func=propose_memory)
-    p_apply = sub.add_parser("apply")
-    p_apply.add_argument("--workspace", required=True)
-    p_apply.add_argument("--proposal", required=True)
-    p_apply.add_argument("--agent-id", default="")
-    p_apply.set_defaults(func=apply_memory)
-    p_render = sub.add_parser("render")
-    p_render.add_argument("--workspace", required=True)
-    p_render.set_defaults(func=render_memory)
-    p_validate = sub.add_parser("validate")
-    p_validate.add_argument("--workspace", required=True)
-    p_validate.set_defaults(func=validate_memory)
+    parser = argparse.ArgumentParser(description="Manage coordinated Air-Gap workspace memory")
+    parser.add_argument("--root", required=True, type=Path)
+    sub = parser.add_subparsers(dest="action", required=True)
+    for action in ["init", "read", "validate"]:
+        child = sub.add_parser(action)
+        child.add_argument("--workspace", required=True)
+        child.add_argument("--agent-id", default="agent")
+    child = sub.add_parser("propose")
+    child.add_argument("--workspace", required=True)
+    child.add_argument("--type", required=True, choices=sorted(TARGET))
+    child.add_argument("--text", required=True)
+    child.add_argument("--agent-id", default="agent")
+    child = sub.add_parser("apply")
+    child.add_argument("--workspace", required=True)
+    child.add_argument("--proposal", required=True)
+    child.add_argument("--agent-id", default="agent")
     args = parser.parse_args()
-    return int(args.func(args))
-
+    args.root = args.root.expanduser().resolve()
+    globals()[f"action_{args.action}"](args)
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())

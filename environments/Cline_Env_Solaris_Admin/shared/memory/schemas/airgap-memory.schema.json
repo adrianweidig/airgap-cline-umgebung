@@ -1,43 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "airgap-memory.schema.json",
-  "title": "Airgap Cline Workspace Memory",
+  "title": "Air-Gap Memory",
   "type": "object",
-  "required": ["schemaVersion", "scope", "workspaceHash", "revision", "updatedAt", "updatedBy", "sections"],
+  "required": [
+    "schemaVersion",
+    "scope",
+    "workspaceHash",
+    "revision",
+    "updatedAt",
+    "updatedBy"
+  ],
   "properties": {
-    "schemaVersion": { "type": "integer", "const": 1 },
-    "scope": { "type": "string", "const": "workspace" },
-    "workspaceHash": { "type": "string", "minLength": 8 },
-    "revision": { "type": "integer", "minimum": 0 },
-    "updatedAt": { "type": "string" },
-    "updatedBy": { "type": "string" },
-    "sections": {
-      "type": "object",
-      "required": ["readFirst", "facts", "decisions", "active", "next", "doNot", "openQuestions"],
-      "properties": {
-        "readFirst": { "$ref": "#/$defs/entries" },
-        "facts": { "$ref": "#/$defs/entries" },
-        "decisions": { "$ref": "#/$defs/entries" },
-        "active": { "$ref": "#/$defs/entries" },
-        "next": { "$ref": "#/$defs/entries" },
-        "doNot": { "$ref": "#/$defs/entries" },
-        "openQuestions": { "$ref": "#/$defs/entries" }
-      }
-    }
-  },
-  "$defs": {
-    "entries": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "text", "createdAt", "createdBy"],
-        "properties": {
-          "id": { "type": "string" },
-          "text": { "type": "string" },
-          "createdAt": { "type": "string" },
-          "createdBy": { "type": "string" }
-        }
-      }
+    "schemaVersion": {
+      "type": "integer"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "workspaceHash": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
     }
   }
 }

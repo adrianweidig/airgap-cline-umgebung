@@ -1,3 +1,3 @@
-# PowerShell Helper
+# PowerShell Helpers
 
-Windows-spezifische Helper liegen zentral in diesem Ordner. Nutze Skripte ueber den Zentralpfad und schreibe Ausgaben nach workspaces/<hash>/helper-output/.
+Windows-specific helpers live centrally in this folder. Use scripts through the central path and write outputs to `workspaces/<hash>/helper-output/`.

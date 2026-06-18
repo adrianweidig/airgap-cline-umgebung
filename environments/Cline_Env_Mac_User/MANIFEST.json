@@ -1,47 +1,36 @@
 {
-    "schemaVersion":  2,
-    "name":  "Cline_Env_Mac_User",
-    "version":  "0.4.0",
-    "generatedAt":  "2026-06-18T13:44:57.2310853+02:00",
-    "os":  "Mac",
-    "role":  "User",
-    "family":  "mac",
-    "primaryMode":  "macOS Cline CLI oder Editor-Integration",
-    "recommendedPath":  "~/cline-airgap/Cline_Env_Mac_User",
-    "assumesClineAlreadyConfigured":  true,
-    "changesProviderConfiguration":  false,
-    "containsProviderConfiguration":  false,
-    "containsInstaller":  false,
-    "containsModels":  false,
-    "selfContained":  true,
-    "bootstrap":  {
-                      "supportsDryRun":  true,
-                      "supportsRepair":  true,
-                      "writesBootstrapStatus":  true,
-                      "createsOwnerGuardedUserFolders":  true
-                  },
-    "memoryModel":  {
-                        "schemaVersion":  1,
-                        "supportsWorkspaceMemory":  true,
-                        "supportsUserMemory":  true,
-                        "canonicalFile":  "workspaces/\u003chash\u003e/memory/MEMORY.json",
-                        "agentReadableFile":  "workspaces/\u003chash\u003e/memory/MEMORY.md",
-                        "helper":  "shared/helpers/python/memory_update.py"
-                    },
-    "firstReadContract":  {
-                              "enabled":  true,
-                              "schemaVersion":  1,
-                              "bootstrapFile":  "bootstrap/FIRST_READ.md",
-                              "globalStubRule":  "00-airgap-zentralumgebung.md",
-                              "requiredFirstFiles":  [
-                                                         "bootstrap/FIRST_READ.md",
-                                                         "AGENTS.md",
-                                                         "ENVIRONMENT.md",
-                                                         "MANIFEST.json",
-                                                         "VERSION",
-                                                         "shared/rules/*.md"
-                                                     ],
-                              "stopIfCentralPathMissing":  true,
-                              "changesProviderConfiguration":  false
-                          }
+  "schemaVersion": 5,
+  "name": "Cline_Env_Mac_User",
+  "version": "0.5.0",
+  "language": "en",
+  "operatingSystem": "macOS",
+  "role": "User",
+  "platformFamily": "mac",
+  "primaryUsage": "macOS Cline usage from a user-owned location",
+  "recommendedPath": "~/Cline_AirGap/Cline_Env_Mac_User",
+  "assumesClineAlreadyConfigured": true,
+  "changesProviderConfiguration": false,
+  "containsInstaller": false,
+  "containsModelFiles": false,
+  "firstReadContract": {
+    "enabled": true,
+    "file": "bootstrap/FIRST_READ.md",
+    "stub": "bootstrap/00-airgap-central-environment.md"
+  },
+  "requiredFirstReadFiles": [
+    "START_HERE.md",
+    "bootstrap/FIRST_READ.md",
+    "AGENTS.md",
+    "ENVIRONMENT.md",
+    "MANIFEST.json",
+    "VERSION",
+    "shared/rules"
+  ],
+  "runtimeDataExcludedFromGit": [
+    "users",
+    "workspaces",
+    "state",
+    "logs",
+    "audit"
+  ]
 }

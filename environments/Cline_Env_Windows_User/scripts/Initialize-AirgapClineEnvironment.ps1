@@ -1,93 +1,19 @@
 [CmdletBinding()]
-param(
-    [string]$RootPath = "",
-    [switch]$NoGlobalStub,
-    [switch]$DryRun,
-    [switch]$Repair
-)
-
+param([string]$RootPath = "", [string]$AgentId = "default-agent", [switch]$DryRun, [switch]$Repair)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-$ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
-if ([string]::IsNullOrWhiteSpace($RootPath)) {
-    $RootPath = (Resolve-Path (Join-Path $ScriptDir "..")).Path
+if ([string]::IsNullOrWhiteSpace($RootPath)) { $RootPath = Split-Path -Parent $PSScriptRoot }
+$RootPath = [System.IO.Path]::GetFullPath($RootPath)
+if (-not (Test-Path -LiteralPath (Join-Path $RootPath "MANIFEST.json") -PathType Leaf)) { throw "Invalid Air-Gap Cline environment: $RootPath" }
+if ($DryRun) {
+    Write-Host "Dry run for Cline_Env_Windows_User at $RootPath"
+    Write-Host "Would create or repair the current user folder and sync global Cline stubs."
+    return
 }
-$root = [System.IO.Path]::GetFullPath($RootPath)
-$errors = @()
-$versionPath = Join-Path $root "VERSION"
-$version = if (Test-Path -LiteralPath $versionPath) { (Get-Content -LiteralPath $versionPath -Raw).Trim() } else { "unknown" }
-
-function Write-BootstrapStatus {
-    param([string]$Status, [string]$AgentRoot, $StubTargets, [string[]]$Errors)
-    $identityDomain = if ($env:USERDOMAIN) { $env:USERDOMAIN } else { $env:COMPUTERNAME }
-    $identityUser = if ($env:USERNAME) { $env:USERNAME } else { [Environment]::UserName }
-    $statusObject = [ordered]@{
-        schemaVersion = 2
-        status = $Status
-        environment = "Cline_Env_Windows_User"
-        version = $version
-        os = "Windows"
-        role = "User"
-        rootPath = $root
-        domain = $identityDomain
-        username = $identityUser
-        host = if ($env:COMPUTERNAME) { $env:COMPUTERNAME } else { [Environment]::MachineName }
-        agentRoot = $AgentRoot
-        dryRun = [bool]$DryRun
-        repair = [bool]$Repair
-        noGlobalStub = [bool]$NoGlobalStub
-        providerChanged = $false
-        checkedAt = (Get-Date).ToString("o")
-        stubTargets = $StubTargets
-        errors = $Errors
-    }
-    if (-not $DryRun) {
-        $stateDir = Join-Path $root "state"
-        New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
-        $statusObject | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $stateDir "bootstrap-status.json") -Encoding UTF8
-    }
-    $statusObject | ConvertTo-Json -Depth 20
-}
-
-try {
-    foreach ($required in @("START_HIER.md", "AGENTS.md", "ENVIRONMENT.md", "MANIFEST.json", "shared/rules", "shared/workflows", "shared/skills", "shared/helpers/python")) {
-        if (-not (Test-Path -LiteralPath (Join-Path $root $required))) {
-            throw "Fehlender Bestandteil: $required"
-        }
-    }
-
-    $agentOutput = & (Join-Path $ScriptDir "New-AirgapClineUserWorkspace.ps1") -RootPath $root -DryRun:$DryRun
-    $agentRoot = ($agentOutput | Select-Object -Last 1)
-    if ($DryRun) {
-        $agentJson = ($agentOutput | Out-String).Trim()
-        if ($agentJson) {
-            try {
-                $agentPlan = $agentJson | ConvertFrom-Json
-                if ($agentPlan.agentRoot) { $agentRoot = $agentPlan.agentRoot }
-            } catch {
-                $agentRoot = $agentJson
-            }
-        }
-    }
-    $stubTargets = @()
-    if (-not $NoGlobalStub) {
-        $syncOutput = & (Join-Path $ScriptDir "Sync-ClineGlobalStubs.ps1") -RootPath $root -DryRun:$DryRun -Repair:$Repair
-        $syncJson = ($syncOutput | Out-String).Trim()
-        if ($syncJson) {
-            try {
-                $sync = $syncJson | ConvertFrom-Json
-                $stubTargets = $sync.targets
-            } catch {
-                $stubTargets = @($syncJson)
-            }
-        }
-    }
-
-    Write-BootstrapStatus -Status "ok" -AgentRoot $agentRoot -StubTargets $stubTargets -Errors @()
-    Write-Host "Initialisierung abgeschlossen fuer Cline_Env_Windows_User."
-} catch {
-    $errors += $_.Exception.Message
-    Write-BootstrapStatus -Status "error" -AgentRoot "" -StubTargets @() -Errors $errors
-    throw
-}
+& (Join-Path $PSScriptRoot "New-AirgapClineUserWorkspace.ps1") -RootPath $RootPath -AgentId $AgentId | Out-Null
+& (Join-Path $PSScriptRoot "Sync-ClineGlobalStubs.ps1") -RootPath $RootPath -Repair:$Repair | Out-Null
+$statusPath = Join-Path $RootPath "state/bootstrap-status.json"
+$status = [ordered]@{ schemaVersion = 2; environment = "Cline_Env_Windows_User"; status = "ok"; version = "0.5.0"; user = $env:USERNAME; domain = $env:USERDOMAIN; host = $env:COMPUTERNAME; rootPath = $RootPath; repair = [bool]$Repair; updatedAt = (Get-Date).ToString("o"); providerConfigurationChanged = $false }
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $statusPath) | Out-Null
+$status | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $statusPath -Encoding UTF8
+Write-Host "Initialization completed for Cline_Env_Windows_User."

@@ -1,17 +1,16 @@
-<!-- AIRGAP-CLINE-MANAGED:v2 -->
 ---
+AIRGAP-CLINE-MANAGED:v5
 name: windows-vscode-cline
-description: Plattformskill fuer Cline_Env_Windows_User mit Fokus auf Windows mit VS Code Cline Extension.
+description: Windows-specific skill for the VS Code Cline extension and user-owned Cline rule paths. Environment: Cline_Env_Windows_User. Primary mode: Windows with the VS Code Cline extension in a user-owned location.
 ---
-
 # windows-vscode-cline
 
-## Plattformregeln
+Use this skill when the current task matches this description: Windows-specific skill for the VS Code Cline extension and user-owned Cline rule paths. Environment: Cline_Env_Windows_User. Primary mode: Windows with the VS Code Cline extension in a user-owned location.
 
-- Umgebung: Cline_Env_Windows_User
-- OS: Windows
-- Berechtigungsmodell: User
-- Primaerer Modus: Windows mit VS Code Cline Extension
-- Empfohlener Ablageort: `C:\Cline_AirGap\Cline_Env_Windows_User oder Netzwerkshare`
+## Procedure
 
-Nutze die Skripte unter scripts/ dieser Umgebung. Cline muss bereits eingerichtet sein. Diese Umgebung veraendert keine Provider-, Modell- oder Authentifizierungsdaten.
+1. Perform the central first-read sequence.
+2. Read `AGENTS.md`, `ENVIRONMENT.md`, and the relevant rules.
+3. Use central helpers and central workspace metadata.
+4. Do not write to foreign user or agent folders.
+5. Do not change provider, model, authentication, or AI-server settings.

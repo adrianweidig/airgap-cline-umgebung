@@ -1,35 +1,41 @@
-# Diese Root-Datei schuetzt das Repo selbst vor unnoetigem Kontext.
-dist/
-release/
-node_modules/
-.venv/
-venv/
-**/__pycache__/
-**/.pytest_cache/
+# Runtime noise
+**/logs/**
+**/audit/**
+**/state/**
+**/users/**/scratch/**
+**/users/**/logs/**
+**/workspaces/**/helper-output/**
 
-# Laufzeitdaten der exportierbaren Umgebungen
-**/users/**
-**/workspaces/**
-!**/workspaces/**/memory/
+# Keep curated memory readable
 !**/workspaces/**/memory/MEMORY.md
 !**/workspaces/**/memory/ACTIVE.md
 !**/workspaces/**/memory/DECISIONS.md
 !**/workspaces/**/memory/PROGRESS.md
 !**/workspaces/**/memory/INDEX.json
-**/state/**
-**/logs/**
-**/audit/**
 
-# Generierte Archive und fremde Binaries
+# Local agent notes
+.codex/**
+.agents/**
+codex_sessions/**
+rollout_summaries/**
+memory_exports/**
+CODEX_LOCAL.md
+CODEX_NOTES.md
+*.codex.md
+*.local.md
+
+# Binary and release artifacts
 *.7z
 *.zip
+*.tgz
+*.tar
+*.tar.gz
 *.exe
 *.msi
 *.vsix
-*.dmg
-*.pkg
-*.deb
-*.rpm
 *.gguf
 *.safetensors
 *.onnx
+*.pt
+*.pth
+*.ckpt

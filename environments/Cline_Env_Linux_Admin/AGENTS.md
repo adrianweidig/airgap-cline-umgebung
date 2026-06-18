@@ -1,63 +1,27 @@
-# Agentenanweisungen: Cline_Env_Linux_Admin
+# Agent Instructions For Cline_Env_Linux_Admin
 
-Diese Datei ist Pflichtkontext. Lies sie vor jeder Aufgabe, die mit dieser Umgebung oder aus dieser Umgebung heraus arbeitet.
+## Absolute Start Requirement
 
-## Lesereihenfolge
+Before any task, Cline must read this central environment first. Resolve `AIRGAP_CLINE_HOME`, read `bootstrap/FIRST_READ.md`, then read this file, `ENVIRONMENT.md`, `MANIFEST.json`, `VERSION`, and all rules under `shared/rules/`.
 
-1. START_HIER.md
-2. AGENTS.md
-3. ENVIRONMENT.md
-4. shared/rules/*.md
-5. passender Workflow aus shared/workflows/
-6. bei Bedarf passender Skill aus shared/skills/*/SKILL.md
+## Write Matrix
 
-## Harte Regeln
-
-- Behandle diesen Ordner als AIRGAP_CLINE_HOME.
-- Veraendere keine Provider-, Modell-, Auth- oder KI-Server-Konfiguration.
-- Nutze zentrale Helper unter shared/helpers/; kopiere sie nicht in Zielrepos.
-- Schreibe Nutzer- und Agentendaten nur in den eigenen Ordner unter `users/linux/`.
-- Pruefe OWNER.json, bevor du in einen vorhandenen Nutzer- oder Agentenordner schreibst.
-- Wenn OWNER.json nicht zum aktuellen Nutzer passt, darfst du dort nicht schreiben.
-- Registriere externe Arbeitsordner unter workspaces/<hash>/.
-- Schreibe Helper-Ausgaben nach workspaces/<hash>/helper-output/.
-- Lege in externen Repos keine dauerhaften .cline, .clinerules, Skills, Workflows oder Helper an, ausser der Nutzer fordert das ausdruecklich.
-
-## Arbeitsablauf fuer normale Tasks
-
-1. Ziel und Arbeitsordner klaeren.
-2. Externen Arbeitsordner zentral registrieren, falls ausserhalb von AIRGAP_CLINE_HOME gearbeitet wird.
-3. Owner-Guard ausfuehren, bevor in `users/` geschrieben wird.
-4. Zentrale Regeln, Workflows, Skills und Helper nutzen.
-5. Fachliche Aenderungen nur im Zielrepo vornehmen, wenn sie zur Nutzeraufgabe gehoeren.
-6. Checks ausfuehren oder klar dokumentieren, warum sie nicht moeglich waren.
-7. Ergebnis im eigenen Agentenordner oder im passenden workspaces/<hash>/ dokumentieren.
-
-## Plattform
-
-- OS: Linux
-- Variante: Admin
-- Primaerer Modus: Linux Cline CLI mit zentraler Ablage
-- Empfohlener Ablageort: `/opt/cline-airgap/Cline_Env_Linux_Admin`
-## Schreibmatrix
-
-| Inhalt | Schreibort |
+| Change type | Write location |
 | --- | --- |
-| Fluechtige Task-Notizen | eigener Agentenordner unter `users/linux/.../agents/<agentid>/memory/SESSION.md` oder `scratch/` |
-| Nutzerpraeferenzen | eigener Nutzerordner unter `users/linux/.../memory/USER_MEMORY.md` |
-| Geteilte Workspace-Memory | `workspaces/<hash>/memory/` |
-| Memory-Vorschlaege | `workspaces/<hash>/memory/inbox/*.memory.md` |
-| Helper-Ausgaben | `workspaces/<hash>/helper-output/` |
+| Short-lived task notes | current agent folder under `users/linux/.../agents/<agent-id>/` |
+| Private user preferences | `users/linux/<owner>/memory/USER_MEMORY.md` |
+| Shared workspace memory | `workspaces/<hash>/memory/` through the memory helper |
+| Helper output | `workspaces/<hash>/helper-output/` |
+| Project changes requested by the user | the target repository or folder |
 
-Geteilte Memory wird nur ueber `shared/helpers/python/memory_update.py` oder die Wrapper aktualisiert. Schreibe keine Memory-Dateien in Zielrepos.
-## Absolute Startpflicht
+## Owner Guard
 
-Nach dem ersten Bootstrap gilt fuer jeden Cline-Agenten:
+Read `OWNER.json` before writing under `users/`. If the owner does not match the current user and host, do not write there.
 
-1. Zuerst den globalen Air-Gap-Stub lesen und daraus `AIRGAP_CLINE_HOME` bestimmen.
-2. Dann `bootstrap/FIRST_READ.md` aus `AIRGAP_CLINE_HOME` lesen.
-3. Danach `AGENTS.md`, `ENVIRONMENT.md`, `MANIFEST.json`, `VERSION` und `shared/rules/*.md` lesen.
-4. Optional `state/bootstrap-status.json` pruefen.
-5. Erst danach Zielworkspace, Memory, Workflows, Skills und Helper verwenden.
+## External Workspaces
 
-Wenn der Zentralpfad fehlt, nicht lesbar ist oder widerspruechlich erscheint, muss der Agent anhalten und den Nutzer nach dem gueltigen Air-Gap-Pfad fragen. Es ist kein valider Arbeitsmodus, ohne zentral gelesene Regeln direkt in einem Zielrepo zu starten.
+Register target folders under `workspaces/<hash>/` before using helpers or shared memory. Do not create persistent `.cline`, `.clinerules`, skills, workflows, helpers, or memory files in target repositories unless the user explicitly requests it.
+
+## Provider Boundary
+
+Do not change provider, model, authentication, or AI-server settings.

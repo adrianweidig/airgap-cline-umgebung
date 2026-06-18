@@ -1,3 +1,3 @@
-# Verhaltenskodex
+# Code Of Conduct
 
-Dieses Projekt erwartet sachliche, respektvolle und technisch nachvollziehbare Zusammenarbeit. Beitraege sollen das Ziel einer sicheren, air-gap-faehigen Cline-Ausgangsumgebung unterstuetzen.
+Be factual, respectful, and focused on the work. This repository is intended for controlled Cline environments, so changes should be understandable, auditable, and conservative.
