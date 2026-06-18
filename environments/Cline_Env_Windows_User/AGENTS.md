@@ -39,3 +39,14 @@ Diese Datei ist Pflichtkontext. Lies sie vor jeder Aufgabe, die mit dieser Umgeb
 - Variante: User
 - Primaerer Modus: Windows mit VS Code Cline Extension
 - Empfohlener Ablageort: `C:\Cline_AirGap\Cline_Env_Windows_User oder Netzwerkshare`
+## Schreibmatrix
+
+| Inhalt | Schreibort |
+| --- | --- |
+| Fluechtige Task-Notizen | eigener Agentenordner unter `users/windows/.../agents/<agentid>/memory/SESSION.md` oder `scratch/` |
+| Nutzerpraeferenzen | eigener Nutzerordner unter `users/windows/.../memory/USER_MEMORY.md` |
+| Geteilte Workspace-Memory | `workspaces/<hash>/memory/` |
+| Memory-Vorschlaege | `workspaces/<hash>/memory/inbox/*.memory.md` |
+| Helper-Ausgaben | `workspaces/<hash>/helper-output/` |
+
+Geteilte Memory wird nur ueber `shared/helpers/python/memory_update.py` oder die Wrapper aktualisiert. Schreibe keine Memory-Dateien in Zielrepos.

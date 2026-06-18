@@ -40,3 +40,6 @@ Initialisiere dich ueber folgenden Pfad: <vollstaendiger Pfad zum Cline_Env_... 
 ## Release-Artefakte
 
 Pro Version werden `.7z`- und `.zip`-Pakete pro Umgebung sowie Gesamtpakete erzeugt. Die Skripte liegen unter `scripts/`.
+## Koordiniertes Memory
+
+Ab v0.3 enthaelt jede Umgebung Vorlagen, Regeln und Helper fuer deterministische Workspace-Memory. Geteilte Memory liegt zentral unter `workspaces/<hash>/memory/`; Zielrepos werden nicht mit Memory-Dateien verschmutzt. Siehe `docs/MEMORY-MODELL.md`.

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "memory-event.schema.json",
+  "title": "Airgap Cline Memory Event",
+  "type": "object",
+  "required": ["schemaVersion", "eventId", "eventType", "workspaceHash", "revision", "createdAt", "createdBy"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "eventId": { "type": "string" },
+    "eventType": { "type": "string" },
+    "workspaceHash": { "type": "string" },
+    "revision": { "type": "integer" },
+    "createdAt": { "type": "string" },
+    "createdBy": { "type": "string" },
+    "details": { "type": "object" }
+  }
+}

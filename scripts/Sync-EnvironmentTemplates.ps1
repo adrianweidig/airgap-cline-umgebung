@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$RootPath = "",
-    [string]$Version = "0.2.0"
+    [string]$Version = "0.3.0"
 )
 
 Set-StrictMode -Version Latest
@@ -12,7 +12,7 @@ if ([string]::IsNullOrWhiteSpace($RootPath)) {
     $RootPath = Split-Path -Parent $ScriptDir
 }
 $RepoRoot = [System.IO.Path]::GetFullPath($RootPath)
-$Enhancer = Join-Path $ScriptDir "Apply-V2Enhancements.ps1"
+$Enhancer = Join-Path $ScriptDir "Apply-V3Enhancements.ps1"
 
 if (-not (Test-Path -LiteralPath $Enhancer -PathType Leaf)) {
     throw "Fehlende Generatorquelle: $Enhancer"

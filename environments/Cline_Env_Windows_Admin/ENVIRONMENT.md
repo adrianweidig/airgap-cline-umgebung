@@ -6,7 +6,7 @@
 | Berechtigungsmodell | Admin |
 | Primaerer Modus | Windows mit VS Code Cline Extension, zentrale Ablage |
 | Empfohlener Ablageort | $(System.Collections.Hashtable.RecommendedPath) |
-| Version | 0.2.0 |
+| Version | 0.3.0 |
 
 Admin-Variante fuer zentrale Maschinen-, Opt- oder Share-Ablage. Sie darf optionale Rechtevorbereitung beschreiben, veraendert aber keine Cline-Provider-, Modell- oder Authentifizierungsdaten.
 

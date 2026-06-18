@@ -39,3 +39,14 @@ Diese Datei ist Pflichtkontext. Lies sie vor jeder Aufgabe, die mit dieser Umgeb
 - Variante: User
 - Primaerer Modus: Linux Cline CLI im Benutzerkontext
 - Empfohlener Ablageort: `~/cline-airgap/Cline_Env_Linux_User`
+## Schreibmatrix
+
+| Inhalt | Schreibort |
+| --- | --- |
+| Fluechtige Task-Notizen | eigener Agentenordner unter `users/linux/.../agents/<agentid>/memory/SESSION.md` oder `scratch/` |
+| Nutzerpraeferenzen | eigener Nutzerordner unter `users/linux/.../memory/USER_MEMORY.md` |
+| Geteilte Workspace-Memory | `workspaces/<hash>/memory/` |
+| Memory-Vorschlaege | `workspaces/<hash>/memory/inbox/*.memory.md` |
+| Helper-Ausgaben | `workspaces/<hash>/helper-output/` |
+
+Geteilte Memory wird nur ueber `shared/helpers/python/memory_update.py` oder die Wrapper aktualisiert. Schreibe keine Memory-Dateien in Zielrepos.

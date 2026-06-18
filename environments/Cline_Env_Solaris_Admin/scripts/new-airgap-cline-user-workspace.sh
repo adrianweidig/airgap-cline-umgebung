@@ -36,7 +36,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   exit 0
 fi
 
-mkdir -p "$AGENT_ROOT" "$USER_ROOT/scratch" "$USER_ROOT/notes" "$USER_ROOT/logs" "$USER_ROOT/outbox"
+mkdir -p "$AGENT_ROOT" "$AGENT_ROOT/memory" "$AGENT_ROOT/outbox/memory-proposals" "$USER_ROOT/memory" "$USER_ROOT/scratch" "$USER_ROOT/notes" "$USER_ROOT/logs" "$USER_ROOT/outbox"
 cat > "$OWNER_PATH" <<EOF
 {
   "schemaVersion": 1,
@@ -60,6 +60,36 @@ cat > "$AGENT_ROOT/AGENT_POLICY.md" <<EOF
 Arbeite nur fuer den Owner dieses Nutzerordners. Pruefe OWNER.json vor Schreibzugriffen. Nutze zentrale Helper aus AIRGAP_CLINE_HOME.
 EOF
 printf "# Aktuelle Aufgabe\n\nNoch keine Aufgabe dokumentiert.\n" > "$AGENT_ROOT/CURRENT_TASK.md"
+cat > "$USER_ROOT/memory/USER_MEMORY.md" <<'EOF'
+# User Memory
+
+scope: user
+schema: airgap-user-memory/v1
+
+## READ_FIRST
+- Keine Secrets, Tokens, Passwoerter oder privaten Rohdaten speichern.
+
+## PREFERENCES
+- Noch keine dauerhaften Nutzerpraeferenzen erfasst.
+
+## DO_NOT
+- Nicht in fremde Nutzer- oder Agentenordner schreiben.
+EOF
+cat > "$AGENT_ROOT/memory/SESSION.md" <<'EOF'
+# Session Memory
+
+scope: agent-session
+schema: airgap-session-memory/v1
+
+## TASK
+- Noch keine Aufgabe dokumentiert.
+
+## SUMMARY
+- Noch keine Zusammenfassung erfasst.
+
+## MEMORY_PROPOSALS
+- Dauerhafte Erkenntnisse als Vorschlaege nach `outbox/memory-proposals/` schreiben.
+EOF
 printf "{}\n" > "$AGENT_ROOT/WORKSPACE_BINDINGS.json"
 mkdir -p "$ROOT_PATH/state"
 printf "%s\n" "$AGENT_ROOT"

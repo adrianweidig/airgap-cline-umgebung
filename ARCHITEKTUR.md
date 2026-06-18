@@ -1,6 +1,6 @@
 # Architektur
 
-Die Air-Gap-Cline-Umgebung ist ein zentraler Startpfad fuer Cline. Dieser Pfad enthaelt Regeln, Workflows, Skills und Helper-Skripte. Cline soll diese zentrale Umgebung als Quelle der Wahrheit verwenden, auch wenn spaeter in beliebigen externen Repos, Desktop-Ordnern oder Netzwerkshares gearbeitet wird.
+Die Air-Gap-Cline-Umgebung ist ein zentraler Startpfad fuer Cline. Dieser Pfad enthaelt Regeln, Workflows, Skills, Memory-Vorlagen und Helper-Skripte. Cline soll diese zentrale Umgebung als Quelle der Wahrheit verwenden, auch wenn spaeter in beliebigen externen Repos, Desktop-Ordnern oder Netzwerkshares gearbeitet wird.
 
 ## Grundprinzipien
 
@@ -9,7 +9,16 @@ Die Air-Gap-Cline-Umgebung ist ein zentraler Startpfad fuer Cline. Dieser Pfad e
 - Der zentrale Umgebungsordner ist exportierbar.
 - Nutzer- und Agentendaten werden lokal in `users/` erzeugt.
 - Externe Arbeitsordner werden in `workspaces/` registriert.
-- Helper bleiben zentral und werden nicht in Zielrepos kopiert.
+- Helper und Memory bleiben zentral und werden nicht in Zielrepos kopiert.
+
+## Memory-Lifecycle
+
+- Private Nutzerpraeferenzen liegen unter `users/<plattform>/<owner>/memory/USER_MEMORY.md`.
+- Laufende Agenten-Notizen liegen unter `users/<plattform>/<owner>/agents/<agentid>/memory/SESSION.md`.
+- Geteiltes Workspace-Memory liegt unter `workspaces/<hash>/memory/`.
+- `MEMORY.json` ist die kanonische maschinenlesbare Wahrheit.
+- `MEMORY.md` ist die kurze deterministische Lesefassung fuer Cline- und andere KI-Agenten.
+- Aenderungen an geteilter Memory laufen ueber Vorschlaege und den Helper `memory_update.py`.
 
 ## Varianten
 

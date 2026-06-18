@@ -10,6 +10,12 @@ venv/
 # Laufzeitdaten der exportierbaren Umgebungen
 **/users/**
 **/workspaces/**
+!**/workspaces/**/memory/
+!**/workspaces/**/memory/MEMORY.md
+!**/workspaces/**/memory/ACTIVE.md
+!**/workspaces/**/memory/DECISIONS.md
+!**/workspaces/**/memory/PROGRESS.md
+!**/workspaces/**/memory/INDEX.json
 **/state/**
 **/logs/**
 **/audit/**

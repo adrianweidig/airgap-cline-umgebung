@@ -50,7 +50,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
   "schemaVersion": 2,
   "status": "ok",
   "environment": "Cline_Env_Linux_Admin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "rootPath": "$ROOT_PATH",
   "agentRoot": "$AGENT_ROOT",
   "dryRun": false,

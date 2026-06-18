@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$RootPath = "",
-    [string]$Version = "0.2.0",
+    [string]$Version = "0.3.0",
     [string]$OutputPath = "",
     [switch]$SkipTests
 )
@@ -127,7 +127,7 @@ Cline muss vor der Nutzung bereits installiert, eingerichtet und mit dem gewuens
 
 ## Verifikation
 
-Alle `.7z`-Pakete wurden mit 7-Zip getestet. Alle `.zip`-Pakete wurden entpackt und auf den erwarteten Root-Ordner geprueft.
+Alle `.7z`-Pakete wurden mit 7-Zip getestet. Alle `.zip`-Pakete wurden entpackt und auf den erwarteten Root-Ordner geprueft. Ab v0.3 enthaelt jede Umgebung ein koordiniertes Memory-Modell; Runtime-Memory bleibt ausserhalb des Git-Verlaufs.
 "@
     [System.IO.File]::WriteAllText((Join-Path $OutputPath "RELEASE_NOTES_DE.md"), $notes, (New-Object System.Text.UTF8Encoding($false)))
     & (Join-Path $PSScriptRoot "New-ReleaseManifest.ps1") -DistPath $OutputPath -Version $Version

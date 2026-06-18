@@ -1,8 +1,8 @@
 {
     "schemaVersion":  2,
     "name":  "Cline_Env_Solaris_User",
-    "version":  "0.2.0",
-    "generatedAt":  "2026-06-18T08:33:38.4190170+02:00",
+    "version":  "0.3.0",
+    "generatedAt":  "2026-06-18T10:39:28.2824253+02:00",
     "os":  "Solaris",
     "role":  "User",
     "family":  "solaris",
@@ -19,5 +19,13 @@
                       "supportsRepair":  true,
                       "writesBootstrapStatus":  true,
                       "createsOwnerGuardedUserFolders":  true
-                  }
+                  },
+    "memoryModel":  {
+                        "schemaVersion":  1,
+                        "supportsWorkspaceMemory":  true,
+                        "supportsUserMemory":  true,
+                        "canonicalFile":  "workspaces/\u003chash\u003e/memory/MEMORY.json",
+                        "agentReadableFile":  "workspaces/\u003chash\u003e/memory/MEMORY.md",
+                        "helper":  "shared/helpers/python/memory_update.py"
+                    }
 }

@@ -23,16 +23,16 @@ $expected = @(
 )
 
 $requiredFiles = @("START_HIER.md", "ENVIRONMENT.md", "AGENTS.md", ".clineignore", "VERSION", "MANIFEST.json", "SHA256SUMS.txt")
-$requiredDirs = @("shared/rules", "shared/workflows", "shared/skills", "shared/helpers/python", "bootstrap", "scripts", "users", "workspaces", "state", "logs", "audit")
+$requiredDirs = @("shared/rules", "shared/workflows", "shared/skills", "shared/helpers/python", "shared/memory/schemas", "shared/memory/templates", "bootstrap", "scripts", "users", "workspaces", "state", "logs", "audit")
 $forbiddenExtensions = @(".exe", ".msi", ".msix", ".appx", ".vsix", ".dmg", ".pkg", ".deb", ".rpm", ".7z", ".zip", ".gguf", ".safetensors", ".onnx", ".pt", ".pth", ".ckpt")
-$requiredRules = @("00-airgap-grundsaetze.md", "05-plattform-und-variante.md", "10-zentralpfad-ist-quell-der-wahrheit.md", "20-nutzer-und-agententrennung.md", "30-keine-repo-verschmutzung.md", "40-zentrale-helper-nutzen.md", "50-verifikation-und-dokumentation.md")
-$requiredWorkflows = @("00-initialisierung.md", "01-zentralstubs-synchronisieren.md", "02-nutzerordner-anlegen.md", "10-externer-arbeitsordner-registrieren.md", "20-klassische-aufgabe-bearbeiten.md", "30-helper-script-nutzen.md", "40-airgap-abnahme.md", "90-selbstverbesserung.md")
-$requiredSkills = @("airgap-bootstrap", "plattform-variante", "nutzer-agenten-schutz", "externer-arbeitsordner", "zentrale-helper", "airgap-validierung")
+$requiredRules = @("00-airgap-grundsaetze.md", "05-plattform-und-variante.md", "10-zentralpfad-ist-quell-der-wahrheit.md", "20-nutzer-und-agententrennung.md", "30-keine-repo-verschmutzung.md", "40-zentrale-helper-nutzen.md", "50-verifikation-und-dokumentation.md", "60-koordiniertes-memory.md")
+$requiredWorkflows = @("00-initialisierung.md", "01-zentralstubs-synchronisieren.md", "02-nutzerordner-anlegen.md", "10-externer-arbeitsordner-registrieren.md", "20-klassische-aufgabe-bearbeiten.md", "30-helper-script-nutzen.md", "40-airgap-abnahme.md", "90-selbstverbesserung.md", "50-memory-lesen.md", "51-memory-vorschlagen.md", "52-memory-konsolidieren.md")
+$requiredSkills = @("airgap-bootstrap", "plattform-variante", "nutzer-agenten-schutz", "externer-arbeitsordner", "zentrale-helper", "airgap-validierung", "koordiniertes-memory")
 
 function Assert-FileContains {
     param([string]$Path, [string]$Needle)
     $content = Get-Content -LiteralPath $Path -Raw
-    if ($content -notlike "*$Needle*") {
+    if ($content -notlike "*$Needle*" -and -not ($Needle -eq "AIRGAP-CLINE-MANAGED:v2" -and $content -like "*AIRGAP-CLINE-MANAGED:v3*")) {
         throw "Datei enthaelt Pflichttext nicht: $Path :: $Needle"
     }
 }
@@ -79,21 +79,21 @@ foreach ($name in $expected) {
         Assert-FileContains -Path $path -Needle "AIRGAP-CLINE-MANAGED:v2"
     }
 
-    foreach ($helper in @("shared/helpers/python/register_workspace.py", "shared/helpers/python/guard_owner.py")) {
+    foreach ($helper in @("shared/helpers/python/register_workspace.py", "shared/helpers/python/guard_owner.py", "shared/helpers/python/memory_update.py", "shared/memory/schemas/airgap-memory.schema.json", "shared/memory/templates/MEMORY.md")) {
         if (-not (Test-Path -LiteralPath (Join-Path $envRoot $helper) -PathType Leaf)) {
             throw "Fehlender Python-Helper in ${name}: $helper"
         }
     }
 
     if ($name -like "*Windows*") {
-        foreach ($script in @("Initialize-AirgapClineEnvironment.ps1", "Sync-ClineGlobalStubs.ps1", "New-AirgapClineUserWorkspace.ps1", "Register-ExternalWorkspace.ps1", "Test-AirgapOwner.ps1")) {
+        foreach ($script in @("Initialize-AirgapClineEnvironment.ps1", "Sync-ClineGlobalStubs.ps1", "New-AirgapClineUserWorkspace.ps1", "Register-ExternalWorkspace.ps1", "Test-AirgapOwner.ps1", "Update-AirgapMemory.ps1")) {
             $path = Join-Path $envRoot "scripts/$script"
             if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Fehlendes Windows-Skript in ${name}: $script" }
         }
         Assert-FileContains -Path (Join-Path $envRoot "scripts/Initialize-AirgapClineEnvironment.ps1") -Needle "DryRun"
         Assert-FileContains -Path (Join-Path $envRoot "scripts/Initialize-AirgapClineEnvironment.ps1") -Needle "Repair"
     } else {
-        foreach ($script in @("initialize-airgap-cline-environment.sh", "sync-cline-global-stubs.sh", "new-airgap-cline-user-workspace.sh", "register-external-workspace.sh", "guard-owner.sh")) {
+        foreach ($script in @("initialize-airgap-cline-environment.sh", "sync-cline-global-stubs.sh", "new-airgap-cline-user-workspace.sh", "register-external-workspace.sh", "guard-owner.sh", "update-airgap-memory.sh")) {
             $path = Join-Path $envRoot "scripts/$script"
             if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Fehlendes POSIX-Skript in ${name}: $script" }
         }
@@ -137,9 +137,30 @@ $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) { $python = Get-Command python3 -ErrorAction SilentlyContinue }
 if ($python) {
     Get-ChildItem -LiteralPath (Join-Path $RepoRoot "environments") -Recurse -Filter *.py | ForEach-Object {
-        & $python.Source -m py_compile $_.FullName
+        & $python.Source -c "import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))" $_.FullName
         if ($LASTEXITCODE -ne 0) { throw "Python-Syntaxfehler: $($_.FullName)" }
     }
+}
+
+$sampleEnv = Join-Path $RepoRoot "environments/Cline_Env_Windows_User"
+$tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("airgap-memory-test-" + [guid]::NewGuid().ToString("N"))
+try {
+    Copy-Item -LiteralPath $sampleEnv -Destination $tempRoot -Recurse
+    $workspace = Join-Path $tempRoot "workspaces/testhash"
+    New-Item -ItemType Directory -Force -Path $workspace | Out-Null
+    @{ schemaVersion = 1; hash = "testhash"; targetPath = $tempRoot } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $workspace "WORKSPACE.json") -Encoding UTF8
+    $pythonForMemory = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $pythonForMemory) { $pythonForMemory = Get-Command python3 -ErrorAction SilentlyContinue }
+    if ($pythonForMemory) {
+        $helper = Join-Path $tempRoot "shared/helpers/python/memory_update.py"
+        & $pythonForMemory.Source $helper --root $tempRoot init --workspace testhash | Out-Null
+        & $pythonForMemory.Source $helper --root $tempRoot propose --workspace testhash --type fact --text "Testfakt fuer Memory-Validierung." --agent-id test-agent | Tee-Object -Variable proposalPath | Out-Null
+        & $pythonForMemory.Source $helper --root $tempRoot apply --workspace testhash --proposal ($proposalPath | Select-Object -Last 1) --agent-id test-agent | Out-Null
+        & $pythonForMemory.Source $helper --root $tempRoot validate --workspace testhash | Out-Null
+        if (-not (Test-Path -LiteralPath (Join-Path $workspace "memory/EVENTS.jsonl"))) { throw "Memory EVENTS.jsonl wurde nicht erzeugt." }
+    }
+} finally {
+    if (Test-Path -LiteralPath $tempRoot) { Remove-Item -LiteralPath $tempRoot -Recurse -Force }
 }
 
 Write-Host "Alle exportierbaren Umgebungen sind valide."

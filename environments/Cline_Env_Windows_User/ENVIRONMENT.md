@@ -6,7 +6,7 @@
 | Berechtigungsmodell | User |
 | Primaerer Modus | Windows mit VS Code Cline Extension |
 | Empfohlener Ablageort | $(System.Collections.Hashtable.RecommendedPath) |
-| Version | 0.2.0 |
+| Version | 0.3.0 |
 
 User-Variante ohne Adminrechte. Sie schreibt nur in den gewaehlten Zentralpfad und in benutzereigene Cline-Pfade.
 

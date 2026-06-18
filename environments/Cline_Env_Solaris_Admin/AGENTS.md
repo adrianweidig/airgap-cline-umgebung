@@ -39,3 +39,14 @@ Diese Datei ist Pflichtkontext. Lies sie vor jeder Aufgabe, die mit dieser Umgeb
 - Variante: Admin
 - Primaerer Modus: Solaris POSIX best-effort mit zentraler Ablage
 - Empfohlener Ablageort: `/opt/cline-airgap/Cline_Env_Solaris_Admin`
+## Schreibmatrix
+
+| Inhalt | Schreibort |
+| --- | --- |
+| Fluechtige Task-Notizen | eigener Agentenordner unter `users/solaris/.../agents/<agentid>/memory/SESSION.md` oder `scratch/` |
+| Nutzerpraeferenzen | eigener Nutzerordner unter `users/solaris/.../memory/USER_MEMORY.md` |
+| Geteilte Workspace-Memory | `workspaces/<hash>/memory/` |
+| Memory-Vorschlaege | `workspaces/<hash>/memory/inbox/*.memory.md` |
+| Helper-Ausgaben | `workspaces/<hash>/helper-output/` |
+
+Geteilte Memory wird nur ueber `shared/helpers/python/memory_update.py` oder die Wrapper aktualisiert. Schreibe keine Memory-Dateien in Zielrepos.

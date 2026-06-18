@@ -40,3 +40,6 @@ Das Skript validiert den Zentralpfad, erzeugt einen eigenen Nutzer-/Agentenordne
 - Globale Workflows: `~/.cline/data/workflows`.
 - Globale Skills: `~/.cline/skills`.
 - Projektbezogene Cline-Dateien werden in externen Zielrepos nicht angelegt, ausser der Nutzer fordert das ausdruecklich.
+## Koordiniertes Memory
+
+Bei externen Arbeitsordnern liest Cline nach der Registrierung `workspaces/<hash>/memory/MEMORY.md`. Wenn Memory fehlt, wird sie zentral mit dem Memory-Helper initialisiert. Zielrepos erhalten keine Memory-Dateien.
