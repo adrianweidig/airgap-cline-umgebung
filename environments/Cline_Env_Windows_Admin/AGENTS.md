@@ -50,3 +50,14 @@ Diese Datei ist Pflichtkontext. Lies sie vor jeder Aufgabe, die mit dieser Umgeb
 | Helper-Ausgaben | `workspaces/<hash>/helper-output/` |
 
 Geteilte Memory wird nur ueber `shared/helpers/python/memory_update.py` oder die Wrapper aktualisiert. Schreibe keine Memory-Dateien in Zielrepos.
+## Absolute Startpflicht
+
+Nach dem ersten Bootstrap gilt fuer jeden Cline-Agenten:
+
+1. Zuerst den globalen Air-Gap-Stub lesen und daraus `AIRGAP_CLINE_HOME` bestimmen.
+2. Dann `bootstrap/FIRST_READ.md` aus `AIRGAP_CLINE_HOME` lesen.
+3. Danach `AGENTS.md`, `ENVIRONMENT.md`, `MANIFEST.json`, `VERSION` und `shared/rules/*.md` lesen.
+4. Optional `state/bootstrap-status.json` pruefen.
+5. Erst danach Zielworkspace, Memory, Workflows, Skills und Helper verwenden.
+
+Wenn der Zentralpfad fehlt, nicht lesbar ist oder widerspruechlich erscheint, muss der Agent anhalten und den Nutzer nach dem gueltigen Air-Gap-Pfad fragen. Es ist kein valider Arbeitsmodus, ohne zentral gelesene Regeln direkt in einem Zielrepo zu starten.

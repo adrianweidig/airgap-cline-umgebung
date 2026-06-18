@@ -50,7 +50,7 @@ if [ "$DRY_RUN" -eq 0 ]; then
   "schemaVersion": 2,
   "status": "ok",
   "environment": "Cline_Env_Solaris_User",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "rootPath": "$ROOT_PATH",
   "agentRoot": "$AGENT_ROOT",
   "dryRun": false,

@@ -1,8 +1,8 @@
 {
     "schemaVersion":  2,
     "name":  "Cline_Env_Windows_Admin",
-    "version":  "0.3.0",
-    "generatedAt":  "2026-06-18T10:48:08.7074628+02:00",
+    "version":  "0.4.0",
+    "generatedAt":  "2026-06-18T13:44:56.3403339+02:00",
     "os":  "Windows",
     "role":  "Admin",
     "family":  "windows",
@@ -27,5 +27,21 @@
                         "canonicalFile":  "workspaces/\u003chash\u003e/memory/MEMORY.json",
                         "agentReadableFile":  "workspaces/\u003chash\u003e/memory/MEMORY.md",
                         "helper":  "shared/helpers/python/memory_update.py"
-                    }
+                    },
+    "firstReadContract":  {
+                              "enabled":  true,
+                              "schemaVersion":  1,
+                              "bootstrapFile":  "bootstrap/FIRST_READ.md",
+                              "globalStubRule":  "00-airgap-zentralumgebung.md",
+                              "requiredFirstFiles":  [
+                                                         "bootstrap/FIRST_READ.md",
+                                                         "AGENTS.md",
+                                                         "ENVIRONMENT.md",
+                                                         "MANIFEST.json",
+                                                         "VERSION",
+                                                         "shared/rules/*.md"
+                                                     ],
+                              "stopIfCentralPathMissing":  true,
+                              "changesProviderConfiguration":  false
+                          }
 }

@@ -43,3 +43,6 @@ Das Skript validiert den Zentralpfad, erzeugt einen eigenen Nutzer-/Agentenordne
 ## Koordiniertes Memory
 
 Bei externen Arbeitsordnern liest Cline nach der Registrierung `workspaces/<hash>/memory/MEMORY.md`. Wenn Memory fehlt, wird sie zentral mit dem Memory-Helper initialisiert. Zielrepos erhalten keine Memory-Dateien.
+## Dauerhaftes Verhalten Nach Initialisierung
+
+Nach erfolgreicher Initialisierung muss Cline nicht erneut ueber diesen Pfad instruiert werden, solange der globale Air-Gap-Stub vorhanden ist. Der Stub ist eine globale Cline-Regel und verweist auf `AIRGAP_CLINE_HOME`. Vor jeder Aufgabe muss Cline zuerst `bootstrap/FIRST_READ.md` aus diesem Zentralpfad lesen und danach die zentralen Agentenanweisungen, Umgebung, Manifest, Version und Regeln pruefen. Erst danach darf ein externer Arbeitsordner bearbeitet werden.

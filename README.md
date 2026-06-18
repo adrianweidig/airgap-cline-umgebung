@@ -43,3 +43,6 @@ Pro Version werden `.7z`- und `.zip`-Pakete pro Umgebung sowie Gesamtpakete erze
 ## Koordiniertes Memory
 
 Ab v0.3 enthaelt jede Umgebung Vorlagen, Regeln und Helper fuer deterministische Workspace-Memory. Geteilte Memory liegt zentral unter `workspaces/<hash>/memory/`; Zielrepos werden nicht mit Memory-Dateien verschmutzt. Siehe `docs/MEMORY-MODELL.md`.
+## First-Read Nach Bootstrap
+
+Ab v0.4 schreibt die Initialisierung einen globalen Air-Gap-Stub in die Cline-Regelpfade. Dieser Stub enthaelt den absoluten `AIRGAP_CLINE_HOME`-Pfad und verpflichtet Cline, vor jeder Aufgabe zuerst `bootstrap/FIRST_READ.md`, danach `AGENTS.md`, `ENVIRONMENT.md`, `MANIFEST.json`, `VERSION` und `shared/rules/` aus der zentralen Umgebung zu lesen. Wenn der Pfad fehlt oder widerspruechlich ist, muss Cline anhalten und den Nutzer nach dem gueltigen Air-Gap-Pfad fragen.

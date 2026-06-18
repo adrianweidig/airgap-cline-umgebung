@@ -6,7 +6,7 @@
 | Berechtigungsmodell | Admin |
 | Primaerer Modus | Linux Cline CLI mit zentraler Ablage |
 | Empfohlener Ablageort | $(System.Collections.Hashtable.RecommendedPath) |
-| Version | 0.3.0 |
+| Version | 0.4.0 |
 
 Admin-Variante fuer zentrale Maschinen-, Opt- oder Share-Ablage. Sie darf optionale Rechtevorbereitung beschreiben, veraendert aber keine Cline-Provider-, Modell- oder Authentifizierungsdaten.
 
@@ -23,3 +23,6 @@ Admin-Variante fuer zentrale Maschinen-, Opt- oder Share-Ablage. Sie darf option
 - User-Varianten duerfen keine systemweiten Pfade oder ACLs erzwingen.
 - Admin-Varianten duerfen zentrale Ablage- und Rechtevorbereitung beschreiben, aber keine Providerdaten aendern.
 - Solaris ist best-effort POSIX und darf keine GNU-only-Pflicht annehmen.
+## First-Read-Betrieb
+
+Die Initialisierung installiert globale Cline-Regelstubs. Diese Stubs sind keine Provider- oder Auth-Konfiguration, sondern nur ein dauerhafter Leseanker. Sie verpflichten Cline, bei jedem Task zuerst die zentrale Umgebung zu lesen und erst danach Zielordner zu bearbeiten.

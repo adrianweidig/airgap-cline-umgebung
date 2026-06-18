@@ -13,13 +13,21 @@ if ([string]::IsNullOrWhiteSpace($RootPath)) {
     $RootPath = (Resolve-Path (Join-Path $ScriptDir "..")).Path
 }
 $root = [System.IO.Path]::GetFullPath($RootPath)
-$marker = "AIRGAP-CLINE-STUB:v2"
-$managedMarker = "AIRGAP-CLINE-MANAGED:v2"
+$marker = "AIRGAP-CLINE-STUB:v4"
+$managedMarkers = @("AIRGAP-CLINE-STUB:v2", "AIRGAP-CLINE-STUB:v3", "AIRGAP-CLINE-STUB:v4", "AIRGAP-CLINE-MANAGED:v2", "AIRGAP-CLINE-MANAGED:v3", "AIRGAP-CLINE-MANAGED:v4", "AIRGAP-CLINE-FIRST-READ:v1")
 $actions = New-Object System.Collections.ArrayList
 
 function Add-Action {
     param([string]$Action, [string]$Path, [string]$BackupPath = "")
     [void]$actions.Add([ordered]@{ action = $Action; path = $Path; backupPath = $BackupPath })
+}
+
+function Test-ManagedContent {
+    param([string]$Content)
+    foreach ($knownMarker in $managedMarkers) {
+        if ($Content -match [regex]::Escape($knownMarker)) { return $true }
+    }
+    return $false
 }
 
 function Write-ManagedFile {
@@ -29,7 +37,7 @@ function Write-ManagedFile {
     $backupPath = ""
     if (Test-Path -LiteralPath $Path) {
         $existing = Get-Content -LiteralPath $Path -Raw
-        if ($existing -notmatch [regex]::Escape($marker) -and $existing -notmatch [regex]::Escape($managedMarker)) {
+        if (-not (Test-ManagedContent -Content $existing)) {
             $backupPath = "$Path.backup-$(Get-Date -Format yyyyMMdd-HHmmss)"
             if (-not $DryRun) { Copy-Item -LiteralPath $Path -Destination $backupPath -Force }
             Add-Action "backup" $Path $backupPath
@@ -51,7 +59,7 @@ function Copy-ManagedSkill {
     if (Test-Path -LiteralPath $DestinationDir) {
         $isManaged = $false
         if (Test-Path -LiteralPath $skillFile) {
-            $isManaged = ((Get-Content -LiteralPath $skillFile -Raw) -match [regex]::Escape($managedMarker))
+            $isManaged = Test-ManagedContent -Content (Get-Content -LiteralPath $skillFile -Raw)
         }
         if (-not $isManaged) {
             $backupDir = "$DestinationDir.backup-$(Get-Date -Format yyyyMMdd-HHmmss)"
@@ -74,14 +82,20 @@ $stub = @"
 # Air-Gap-Cline-Zentralumgebung
 
 AIRGAP_CLINE_HOME: ``$root``
+FIRST_READ_CONTRACT: ``$root\bootstrap\FIRST_READ.md``
 
-Pflicht vor jeder Aufgabe:
+Diese globale Regel ist der dauerhafte Startanker nach dem ersten Bootstrap.
 
-1. Lies ``$root\AGENTS.md``.
-2. Lies ``$root\ENVIRONMENT.md``.
-3. Beachte alle Regeln unter ``$root\shared\rules``.
-4. Nutze zentrale Helper unter ``$root\shared\helpers``.
-5. Veraendere keine Provider-, Modell-, Auth- oder KI-Server-Konfiguration.
+Pflicht als allererster Schritt jeder Aufgabe:
+
+1. Loese AIRGAP_CLINE_HOME aus diesem Stub auf.
+2. Pruefe, dass ``$root`` lesbar ist und die Dateien ``START_HIER.md``, ``AGENTS.md``, ``ENVIRONMENT.md``, ``MANIFEST.json``, ``VERSION`` und ``shared\rules`` enthaelt.
+3. Lies zuerst ``$root\bootstrap\FIRST_READ.md``.
+4. Lies danach ``$root\AGENTS.md``, ``$root\ENVIRONMENT.md``, ``$root\MANIFEST.json``, ``$root\VERSION`` und alle Regeln unter ``$root\shared\rules``.
+5. Pruefe ``$root\state\bootstrap-status.json``, falls vorhanden.
+6. Nutze Workflows, Skills, Helper, Nutzerordner, Workspace-Metadaten und Zielrepos erst nach diesem First-Read.
+7. Wenn der Pfad fehlt, unlesbar ist oder mehreren Stubs widerspricht, halte an und frage den Nutzer nach dem gueltigen Air-Gap-Pfad.
+8. Veraendere keine Provider-, Modell-, Auth- oder KI-Server-Konfiguration.
 "@
 
 $ruleTargets = @(
@@ -96,9 +110,14 @@ foreach ($target in $ruleTargets) {
     Write-ManagedFile -Path $target -Content $stub
 }
 
-$workflowTarget = Join-Path $HOME ".cline/data/workflows"
-foreach ($workflow in Get-ChildItem -LiteralPath (Join-Path $root "shared/workflows") -Filter "*.md" -File) {
-    Copy-ManagedFile -Source $workflow.FullName -Destination (Join-Path $workflowTarget $workflow.Name)
+$workflowTargets = @((Join-Path $HOME ".cline/data/workflows"))
+if ($documents) {
+    $workflowTargets += Join-Path $documents "Cline/Workflows"
+}
+foreach ($workflowTarget in $workflowTargets) {
+    foreach ($workflow in Get-ChildItem -LiteralPath (Join-Path $root "shared/workflows") -Filter "*.md" -File) {
+        Copy-ManagedFile -Source $workflow.FullName -Destination (Join-Path $workflowTarget $workflow.Name)
+    }
 }
 
 $skillsTarget = Join-Path $HOME ".cline/skills"
@@ -107,11 +126,13 @@ foreach ($skill in Get-ChildItem -LiteralPath (Join-Path $root "shared/skills") 
 }
 
 $state = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     environment = "Cline_Env_Windows_User"
+    version = "0.4.0"
     dryRun = [bool]$DryRun
     repair = [bool]$Repair
     rootPath = $root
+    firstReadContract = Join-Path $root "bootstrap/FIRST_READ.md"
     syncedAt = (Get-Date).ToString("o")
     targets = $actions
     providerChanged = $false

@@ -23,3 +23,6 @@ Die Air-Gap-Cline-Umgebung ist ein zentraler Startpfad fuer Cline. Dieser Pfad e
 ## Varianten
 
 Es gibt je OS eine User- und Admin-Variante. User-Varianten arbeiten ohne Adminrechte und schreiben nur in Benutzerpfade. Admin-Varianten duerfen zentrale Ablagen vorbereiten, bleiben aber ebenfalls provider-neutral.
+## First-Read-Vertrag
+
+Nach der ersten Initialisierung ist der globale Stub die dauerhafte Eintrittsstelle fuer Cline. Er liegt in den globalen Cline-Regelpfaden und verweist auf `AIRGAP_CLINE_HOME`. Cline muss diesen Pfad als Quelle der Wahrheit behandeln und vor jeder Zielworkspace-Arbeit zuerst `bootstrap/FIRST_READ.md` lesen. Danach folgen `AGENTS.md`, `ENVIRONMENT.md`, `MANIFEST.json`, `VERSION`, `shared/rules/`, optional `state/bootstrap-status.json` und erst dann Workspace-Memory, Workflows, Skills und Helper.
