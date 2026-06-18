@@ -1,0 +1,13 @@
+{
+    "name":  "Cline_Env_Linux_User",
+    "version":  "0.1.0",
+    "generatedAt":  "2026-06-18T06:50:33.6821614+02:00",
+    "os":  "Linux",
+    "role":  "User",
+    "family":  "linux",
+    "primaryMode":  "Linux Cline CLI im Benutzerkontext",
+    "recommendedPath":  "~/cline-airgap/Cline_Env_Linux_User",
+    "assumesClineAlreadyConfigured":  true,
+    "changesProviderConfiguration":  false,
+    "selfContained":  true
+}

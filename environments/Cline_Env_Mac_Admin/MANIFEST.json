@@ -1,0 +1,13 @@
+{
+    "name":  "Cline_Env_Mac_Admin",
+    "version":  "0.1.0",
+    "generatedAt":  "2026-06-18T06:50:34.3043963+02:00",
+    "os":  "Mac",
+    "role":  "Admin",
+    "family":  "mac",
+    "primaryMode":  "macOS zentrale Ablage",
+    "recommendedPath":  "/Users/Shared/Cline_AirGap/Cline_Env_Mac_Admin oder /opt/cline-airgap/Cline_Env_Mac_Admin",
+    "assumesClineAlreadyConfigured":  true,
+    "changesProviderConfiguration":  false,
+    "selfContained":  true
+}
